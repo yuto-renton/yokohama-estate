@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物件スコアリング</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #0f1117;
+  --surface: #1a1d27;
+  --surf2:   #22253a;
+  --border:  #2a2d3e;
+  --text:    #e0e0e0;
+  --muted:   #777;
+  --blue:    #7eb8f7;
+  --green:   #6dd98c;
+  --yellow:  #f7c948;
+  --red:     #ff6b6b;
+  --purple:  #c084fc;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Helvetica Neue','Hiragino Sans','Meiryo',sans-serif;
+  padding: 16px 14px 64px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+.container { max-width: 900px; margin: 0 auto; }
+
+/* ── Header ── */
+.header { margin-bottom: 16px; }
+.header h1 { font-size: 1.25em; color: var(--blue); }
+.header p  { font-size: 0.78em; color: var(--muted); margin-top: 2px; }
+
+/* ── Top bar: 物件名 + 足切り ── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+.name-input {
+  flex: 1;
+  min-width: 120px;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.88em;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color .15s;
+}
+.name-input::placeholder { color: var(--muted); }
+.name-input:focus { border-color: var(--blue); }
+
+/* 足切りトグル群 */
+.ng-checks {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.ng-btn {
+  font-size: 0.73em;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surf2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .12s;
+  white-space: nowrap;
+  user-select: none;
+}
+.ng-btn.ok { background: #152d1e; border-color: #2d6b45; color: var(--green); font-weight: 700; }
+.ng-btn.ng { background: #2d1515; border-color: #6b2020; color: var(--red);   font-weight: 700; }
+
+/* ── Main 2-col layout ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 12px;
+}
+@media (max-width: 640px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── 4 big input cards ── */
+.inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.input-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  transition: border-color .15s;
+  cursor: text;
+}
+.input-card:focus-within {
+  border-color: var(--blue);
+}
+.ic-label {
+  font-size: 0.72em;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ic-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.ic-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  color: var(--text);
+  font-size: 1.9em;
+  font-weight: 700;
+  padding: 2px 0 4px;
+  outline: none;
+  width: 100%;
+  transition: border-color .15s;
+  -moz-appearance: textfield;
+}
+.ic-input::-webkit-outer-spin-button,
+.ic-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.ic-input:focus { border-bottom-color: var(--blue); }
+.ic-input::placeholder { color: var(--border); font-size: 0.7em; }
+.ic-unit {
+  font-size: 0.82em;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+/* Score preview badge on each card */
+.ic-badge {
+  display: inline-block;
+  font-size: 0.68em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--surf2);
+  color: var(--muted);
+  margin-top: 7px;
+  transition: all .2s;
+}
+
+/* Save button */
+.btn-save {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  background: var(--blue);
+  color: #0a0f1a;
+  font-weight: 700;
+  font-size: 0.92em;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: opacity .15s;
+  letter-spacing: .02em;
+}
+.btn-save:hover { opacity: .85; }
+
+/* ── Score panel ── */
+.score-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 16px;
+}
+.sec-label {
+  font-size: 0.68em;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Score ring */
+.score-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.ring-wrap { position: relative; width: 90px; height: 90px; flex-shrink: 0; }
+.ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ring-score { font-size: 1.65em; font-weight: 700; line-height: 1; }
+.ring-max   { font-size: 0.60em; color: var(--muted); }
+.tier-wrap  { flex: 1; min-width: 0; }
+.tier-badge {
+  display: inline-block;
+  font-size: 0.76em;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--surf2);
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.tier-comment { font-size: 0.76em; color: var(--muted); line-height: 1.5; }
+
+/* NG panel */
+.ng-panel {
+  background: #2d1515;
+  border: 1px solid #6b2020;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.ng-title { font-size: 0.9em; font-weight: 700; color: var(--red); margin-bottom: 6px; }
+.ng-list  { font-size: 0.80em; color: #ffaaaa; line-height: 2; }
+
+/* Category bars */
+.cat-bars { margin-bottom: 14px; }
+.cat-row  { margin-bottom: 8px; }
+.cat-head {
+  display: flex; justify-content: space-between;
+  font-size: 0.70em; color: var(--muted); margin-bottom: 3px;
+}
+.cat-pts { color: var(--text); font-weight: 600; }
+.bar-bg  { height: 5px; background: var(--surf2); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+
+/* Weaknesses */
+.weak-title { font-size: 0.70em; color: var(--muted); margin-bottom: 6px; }
+.weak-list  { display: flex; flex-direction: column; gap: 5px; }
+.weak-item {
+  font-size: 0.76em;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--surf2);
+  border-left: 3px solid var(--yellow);
+  color: #e0d080;
+}
+.weak-item.ok { border-left-color: var(--green); color: #80d090; }
+
+/* ── Comparison ── */
+.comparison-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px 16px;
+}
+.comp-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.comp-title { font-size: 0.82em; color: var(--muted); }
+.btn-clear {
+  font-size: 0.70em; padding: 3px 9px;
+  border-radius: 5px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.btn-clear:hover { color: var(--red); border-color: var(--red); }
+.empty-msg { text-align: center; font-size: 0.80em; color: var(--muted); padding: 16px; }
+
+.comp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.comp-card {
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 9px; padding: 11px; position: relative;
+  cursor: pointer; transition: border-color .15s;
+}
+.comp-card:hover { border-color: var(--blue); }
+.comp-card.best-score { border-color: var(--green); }
+.comp-del {
+  position: absolute; top: 6px; right: 7px;
+  background: none; border: none;
+  color: var(--muted); font-size: 0.80em; cursor: pointer; padding: 2px;
+}
+.comp-del:hover { color: var(--red); }
+.comp-name {
+  font-size: 0.78em; font-weight: 600; color: var(--text);
+  margin-bottom: 5px; padding-right: 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.comp-score { font-size: 1.55em; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+.comp-tier  { font-size: 0.65em; margin-bottom: 7px; }
+.comp-rows  { font-size: 0.68em; color: var(--muted); line-height: 1.85; }
+.comp-rows span { display: flex; justify-content: space-between; }
+.comp-rows .val { color: var(--text); }
+.comp-rows .val.best { color: var(--green); font-weight: 700; }
+.comp-ng { font-size: 0.70em; color: var(--red); font-weight: 700; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🏠 物件スコアリング</h1>
+    <p>SUUMO を見ながらその場で採点・比較する</p>
+  </div>
+
+  <!-- Top bar: 物件名 + 足切りトグル -->
+  <div class="top-bar">
+    <input class="name-input" type="text" id="f-name" placeholder="物件名（任意）">
+    <div class="ng-checks">
+      <button class="ng-btn ok" data-key="elevator" data-val="yes" onclick="toggleNG(this)">🛗 EV あり</button>
+      <button class="ng-btn ok" data-key="area"     data-val="yes" onclick="toggleNG(this)">📍 横浜市内</button>
+      <button class="ng-btn ok" data-key="floors"   data-val="yes" onclick="toggleNG(this)">🏢 5F 以上</button>
+    </div>
+  </div>
+
+  <!-- Main 2-col: inputs + score -->
+  <div class="main-grid">
+
+    <!-- LEFT: 4 big inputs -->
+    <div>
+      <div class="inputs-grid">
+
+        <!-- 駅徒歩 -->
+        <div class="input-card" onclick="this.querySelector('input').focus()">
+          <div class="ic-label">🚶 駅 徒歩</div>
+          <div class="ic-row">
+            <input class="ic-input" type="number" id="f-walk"  min="1" max="60"  inputmode="numeric" placeholder="—" oninput="recalc()">
+            <span class="ic-unit">分</span>
+          </div>
+          <div class="ic-badge" id="badge-walk">最大 35点</div>
+        </div>
+
+        <!-- 品川まで -->
+        <div class="input-card" onclick="this.querySelector('input').focus()">
+          <div class="ic-label">🚄 品川まで</div>
+          <div class="ic-row">
+            <input class="ic-input" type="number" id="f-shina" min="1" max="120" inputmode="numeric" placeholder="—" oninput="recalc()">
+            <span class="ic-unit">分</span>
+          </div>
+          <div class="ic-badge" id="badge-shina">最大 25点</div>
+        </div>
+
+        <!-- 価格 -->
+        <div class="input-card" onclick="this.querySelector('input').focus()">
+          <div class="ic-label">💰 価格</div>
+          <div class="ic-row">
+            <input class="ic-input" type="number" id="f-price" min="100" max="20000" step="50" inputmode="numeric" placeholder="—" oninput="recalc()">
+            <span class="ic-unit">万</span>
+          </div>
+          <div class="ic-badge" id="badge-price">最大 25点</div>
+        </div>
+
+        <!-- 築年数 -->
+        <div class="input-card" onclick="this.querySelector('input').focus()">
+          <div class="ic-label">🏗 築年数</div>
+          <div class="ic-row">
+            <input class="ic-input" type="number" id="f-age"   min="0" max="60"  inputmode="numeric" placeholder="—" oninput="recalc()">
+            <span class="ic-unit">年</span>
+          </div>
+          <div class="ic-badge" id="badge-age">最大 15点</div>
+        </div>
+
+      </div><!-- /inputs-grid -->
+
+      <button class="btn-save" onclick="saveProperty()">比較リストに保存 →</button>
+    </div>
+
+    <!-- RIGHT: Score display -->
+    <div class="score-panel">
+      <div class="sec-label">採点結果</div>
+
+      <!-- NG panel -->
+      <div class="ng-panel" id="ng-panel" style="display:none">
+        <div class="ng-title">⛔ 足切り — 検討対象外</div>
+        <div class="ng-list" id="ng-reasons"></div>
+      </div>
+
+      <!-- Ring -->
+      <div class="score-top">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2d3e" stroke-width="9"/>
+            <circle id="ring-arc" cx="50" cy="50" r="40" fill="none"
+              stroke="var(--border)" stroke-width="9"
+              stroke-dasharray="251.2" stroke-dashoffset="251.2"
+              stroke-linecap="round"/>
+          </svg>
+          <div class="ring-center">
+            <span class="ring-score" id="ring-num">—</span>
+            <span class="ring-max">/100</span>
+          </div>
+        </div>
+        <div class="tier-wrap">
+          <div class="tier-badge" id="tier-badge">入力待ち</div>
+          <div class="tier-comment" id="tier-comment">4項目を入力すると採点されます</div>
+        </div>
+      </div>
+
+      <!-- Category bars -->
+      <div class="cat-bars">
+        <div class="cat-row">
+          <div class="cat-head"><span>🚶 駅徒歩</span><span class="cat-pts"><span id="s-walk">—</span> / 35</span></div>
+          <div class="bar-bg"><div class="bar-fill" id="b-walk"  style="width:0%;background:var(--blue)"></div></div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-head"><span>🚄 品川まで</span><span class="cat-pts"><span id="s-shina">—</span> / 25</span></div>
+          <div class="bar-bg"><div class="bar-fill" id="b-shina" style="width:0%;background:var(--purple)"></div></div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-head"><span>💰 価格</span><span class="cat-pts"><span id="s-price">—</span> / 25</span></div>
+          <div class="bar-bg"><div class="bar-fill" id="b-price" style="width:0%;background:var(--yellow)"></div></div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-head"><span>🏗 築年数</span><span class="cat-pts"><span id="s-age">—</span> / 15</span></div>
+          <div class="bar-bg"><div class="bar-fill" id="b-age"   style="width:0%;background:var(--green)"></div></div>
+        </div>
+      </div>
+
+      <!-- Weaknesses -->
+      <div class="weak-title">💡 弱点・改善ポイント</div>
+      <div class="weak-list" id="weak-list">
+        <div class="weak-item ok">4項目を入力すると弱点分析が表示されます</div>
+      </div>
+    </div>
+
+  </div><!-- /main-grid -->
+
+  <!-- Comparison -->
+  <div class="comparison-panel">
+    <div class="comp-header">
+      <span class="comp-title">📋 比較リスト（最大5件）— カードをタップで再読み込み</span>
+      <button class="btn-clear" onclick="clearAll()">クリア</button>
+    </div>
+    <div id="comp-container">
+      <div class="empty-msg">保存した物件がここに表示されます</div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+<script>
+// ─────────────────────────────
+// State
+// ─────────────────────────────
+const state = { elevator: 'yes', area: 'yes', floors: 'yes' };
+
+// ─────────────────────────────
+// Toggle 足切りボタン
+// ─────────────────────────────
+function toggleNG(btn) {
+  const key = btn.dataset.key;
+  const isOk = btn.classList.contains('ok');
+  // flip
+  const newVal = isOk ? 'no' : 'yes';
+  state[key] = newVal;
+  btn.className = 'ng-btn ' + (newVal === 'yes' ? 'ok' : 'ng');
+  // label
+  const labels = {
+    elevator: newVal === 'yes' ? '🛗 EV あり'  : '🛗 EV なし',
+    area:     newVal === 'yes' ? '📍 横浜市内' : '📍 横浜市外',
+    floors:   newVal === 'yes' ? '🏢 5F 以上'  : '🏢 5F 未満',
+  };
+  btn.textContent = labels[key];
+  recalc();
+}
+
+// ─────────────────────────────
+// Scoring
+// ─────────────────────────────
+function scoreWalk(v)  {
+  if (v === null) return null;
+  if (v <= 3)  return 35;
+  if (v <= 6)  return 25;
+  if (v <= 10) return 10;
+  return 0;
+}
+function scoreShina(v) {
+  if (v === null) return null;
+  if (v <= 20) return 25;
+  if (v <= 30) return 15;
+  if (v <= 40) return 5;
+  return 0;
+}
+function scorePrice(v) {
+  if (v === null) return null;
+  if (v <= 3500) return 25;
+  if (v <= 4000) return 18;
+  if (v <= 4500) return 10;
+  if (v <= 5000) return 5;
+  return 0;
+}
+function scoreAge(v) {
+  if (v === null) return null;
+  if (v <= 10) return 15;
+  if (v <= 20) return 10;
+  if (v <= 30) return 5;
+  return 0;
+}
+
+function getVal(id) {
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? null : v;
+}
+
+function tierInfo(score, eliminated) {
+  if (eliminated) return { cls: 'c-red',    emoji: '⛔', short: '足切り対象外',       comment: '足切り条件に該当するため検討対象外です。' };
+  if (score === null) return { cls: '',      emoji: '',   short: '入力待ち',           comment: '4項目を入力すると採点されます' };
+  if (score >= 80)    return { cls: 'c-gold',  emoji: '🏆', short: '超優良・即検討レベル', comment: '主要条件をほぼ満たしています。すぐに内見予約を検討しましょう。' };
+  if (score >= 60)    return { cls: 'c-blue',  emoji: '✅', short: '有力候補・詳細確認推奨', comment: '総合的に良好です。弱点を確認したうえで内見に進んでください。' };
+  if (score >= 40)    return { cls: 'c-yellow',emoji: '⚠️', short: '条件次第・要交渉',   comment: '一部の条件が劣ります。価格交渉や妥協点を整理して再評価しましょう。' };
+  return                     { cls: 'c-red',   emoji: '❌', short: '優先度低',           comment: '複数の条件が大きく劣っています。他の物件を優先することを推奨します。' };
+}
+
+function scoreColor(score) {
+  if (score === null) return 'var(--muted)';
+  if (score >= 80) return 'var(--green)';
+  if (score >= 60) return 'var(--blue)';
+  if (score >= 40) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+// ─────────────────────────────
+// Recalc
+// ─────────────────────────────
+function recalc() {
+  const walk  = getVal('f-walk');
+  const shina = getVal('f-shina');
+  const price = getVal('f-price');
+  const age   = getVal('f-age');
+
+  const ngReasons = [];
+  if (state.elevator === 'no') ngReasons.push('エレベーターなし');
+  if (state.area     === 'no') ngReasons.push('横浜市外');
+  if (state.floors   === 'no') ngReasons.push('5階建て未満');
+  const eliminated = ngReasons.length > 0;
+
+  const sw = scoreWalk(walk);
+  const ss = scoreShina(shina);
+  const sp = scorePrice(price);
+  const sa = scoreAge(age);
+  const hasAll = [sw, ss, sp, sa].every(v => v !== null);
+  const total  = (!eliminated && hasAll) ? sw + ss + sp + sa : null;
+  const tier   = tierInfo(total, eliminated);
+
+  // ── Input card badges ──
+  function setBadge(id, pts, max, label) {
+    const el = document.getElementById(id);
+    if (pts === null) { el.textContent = `最大 ${max}点`; el.style.cssText = ''; return; }
+    el.textContent = `${pts} / ${max}点`;
+    const pct = pts / max;
+    el.style.background = pct === 1 ? '#1a3d28' : pct >= 0.5 ? '#162336' : pct > 0 ? '#2d2510' : '#2d1515';
+    el.style.color = pct === 1 ? 'var(--green)' : pct >= 0.5 ? 'var(--blue)' : pct > 0 ? 'var(--yellow)' : 'var(--red)';
+    el.style.border = '1px solid ' + (pct === 1 ? '#2d6b45' : pct >= 0.5 ? '#2d4a6b' : pct > 0 ? '#5a4a10' : '#6b2020');
+  }
+  setBadge('badge-walk',  sw, 35, '駅徒歩');
+  setBadge('badge-shina', ss, 25, '品川まで');
+  setBadge('badge-price', sp, 25, '価格');
+  setBadge('badge-age',   sa, 15, '築年数');
+
+  // ── NG panel ──
+  const ngPanel = document.getElementById('ng-panel');
+  if (eliminated) {
+    ngPanel.style.display = 'block';
+    document.getElementById('ng-reasons').innerHTML = ngReasons.map(r => `✘ ${r}`).join('<br>');
+  } else {
+    ngPanel.style.display = 'none';
+  }
+
+  // ── Ring ──
+  const CIRC = 251.2;
+  const ringNum = document.getElementById('ring-num');
+  const ringArc = document.getElementById('ring-arc');
+  if (eliminated) {
+    ringNum.textContent = 'NG';
+    ringNum.style.color = 'var(--red)';
+    ringArc.setAttribute('stroke', 'var(--red)');
+    ringArc.style.strokeDashoffset = CIRC * 0.8;
+  } else if (total !== null) {
+    ringNum.textContent = total;
+    ringNum.style.color = scoreColor(total);
+    ringArc.setAttribute('stroke', scoreColor(total));
+    ringArc.style.strokeDashoffset = CIRC * (1 - total / 100);
+  } else {
+    ringNum.textContent = '—';
+    ringNum.style.color = 'var(--muted)';
+    ringArc.setAttribute('stroke', 'var(--border)');
+    ringArc.style.strokeDashoffset = CIRC;
+  }
+
+  // ── Tier badge ──
+  const badge = document.getElementById('tier-badge');
+  badge.textContent = tier.emoji ? `${tier.emoji} ${tier.short}` : tier.short;
+  badge.style.cssText = '';
+  if (!eliminated && total !== null) {
+    badge.style.background = total >= 80 ? '#1a3d28' : total >= 60 ? '#162336' : total >= 40 ? '#2d2510' : '#2d1515';
+    badge.style.color      = scoreColor(total);
+  } else if (eliminated) {
+    badge.style.background = '#2d1515';
+    badge.style.color      = 'var(--red)';
+  } else {
+    badge.style.background = 'var(--surf2)';
+    badge.style.color      = 'var(--muted)';
+  }
+  document.getElementById('tier-comment').textContent = tier.comment;
+
+  // ── Category bars ──
+  function bar(scoreVal, max, numId, barId) {
+    document.getElementById(numId).textContent = scoreVal !== null ? scoreVal : '—';
+    document.getElementById(barId).style.width = scoreVal !== null ? `${scoreVal / max * 100}%` : '0%';
+  }
+  bar(sw, 35, 's-walk',  'b-walk');
+  bar(ss, 25, 's-shina', 'b-shina');
+  bar(sp, 25, 's-price', 'b-price');
+  bar(sa, 15, 's-age',   'b-age');
+
+  // ── Weaknesses ──
+  const weakList = document.getElementById('weak-list');
+  weakList.innerHTML = '';
+  const add = (text, isOk) => {
+    const d = document.createElement('div');
+    d.className = 'weak-item' + (isOk ? ' ok' : '');
+    d.textContent = text;
+    weakList.appendChild(d);
+  };
+
+  if (eliminated) {
+    ngReasons.forEach(r => add(`⛔ ${r} — 足切り対象`, false));
+    return;
+  }
+  if (!hasAll) { add('4項目を入力すると弱点分析が表示されます', true); return; }
+
+  const items = [];
+  if (sw < 35) items.push({ pts: 35 - sw, text: `▼ 駅徒歩 ${walk}分（3分以内なら +${35-sw}点）` });
+  else add(`▲ 駅徒歩 ${walk}分以内 — 満点 🎯`, true);
+
+  if (ss < 25) items.push({ pts: 25 - ss, text: `▼ 品川まで ${shina}分（20分以内なら +${25-ss}点）` });
+  else add(`▲ 品川まで ${shina}分 — 満点 🎯`, true);
+
+  if (sp < 25) items.push({ pts: 25 - sp, text: `▼ ${price.toLocaleString()}万円（3,500万以下なら +${25-sp}点）` });
+  else add(`▲ ${price.toLocaleString()}万円 3,500万以下 — 満点 🎯`, true);
+
+  if (sa < 15) items.push({ pts: 15 - sa, text: `▼ 築${age}年（10年以内なら +${15-sa}点）` });
+  else add(`▲ 築${age}年以内 — 満点 🎯`, true);
+
+  items.sort((a, b) => b.pts - a.pts).forEach(i => add(i.text, false));
+
+  const lost = 100 - total;
+  add(lost === 0 ? '🏆 全カテゴリ満点！' : `合計 ${lost}点の取りこぼし`, lost === 0);
+}
+
+// ─────────────────────────────
+// Save / Compare
+// ─────────────────────────────
+function buildData() {
+  const walk  = getVal('f-walk');
+  const shina = getVal('f-shina');
+  const price = getVal('f-price');
+  const age   = getVal('f-age');
+  const ngR = [];
+  if (state.elevator === 'no') ngR.push('EV なし');
+  if (state.area     === 'no') ngR.push('横浜市外');
+  if (state.floors   === 'no') ngR.push('5F 未満');
+  const eliminated = ngR.length > 0;
+  const sw = scoreWalk(walk), ss = scoreShina(shina), sp = scorePrice(price), sa = scoreAge(age);
+  const hasAll = [sw,ss,sp,sa].every(v => v !== null);
+  const total = (!eliminated && hasAll) ? sw+ss+sp+sa : null;
+  return { id: Date.now(), name: document.getElementById('f-name').value || '無題物件',
+    elevator: state.elevator, area: state.area, floors: state.floors,
+    walk, shina, price, age, sw, ss, sp, sa, total, eliminated, ngR,
+    savedAt: new Date().toLocaleDateString('ja-JP') };
+}
+
+function saveProperty() {
+  const p = buildData();
+  let list = loadList();
+  list.unshift(p);
+  if (list.length > 5) list = list.slice(0, 5);
+  localStorage.setItem('prop_list_v2', JSON.stringify(list));
+  renderComp();
+}
+
+function loadList() {
+  try { return JSON.parse(localStorage.getItem('prop_list_v2') || '[]'); } catch { return []; }
+}
+
+function deleteProperty(id) {
+  localStorage.setItem('prop_list_v2', JSON.stringify(loadList().filter(p => p.id !== id)));
+  renderComp();
+}
+
+function clearAll() {
+  if (confirm('比較リストをすべて削除しますか？')) {
+    localStorage.removeItem('prop_list_v2');
+    renderComp();
+  }
+}
+
+function loadToForm(prop) {
+  document.getElementById('f-name').value = prop.name === '無題物件' ? '' : prop.name;
+  ['walk','shina','price','age'].forEach(k => {
+    const el = document.getElementById('f-' + k);
+    el.value = prop[k] !== null && prop[k] !== undefined ? prop[k] : '';
+  });
+  ['elevator','area','floors'].forEach(k => {
+    state[k] = prop[k] || 'yes';
+    const btn = document.querySelector(`[data-key="${k}"]`);
+    if (!btn) return;
+    btn.className = 'ng-btn ' + (state[k] === 'yes' ? 'ok' : 'ng');
+    const labels = {
+      elevator: state[k]==='yes' ? '🛗 EV あり'  : '🛗 EV なし',
+      area:     state[k]==='yes' ? '📍 横浜市内' : '📍 横浜市外',
+      floors:   state[k]==='yes' ? '🏢 5F 以上'  : '🏢 5F 未満',
+    };
+    btn.textContent = labels[k];
+  });
+  recalc();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderComp() {
+  const list = loadList();
+  const container = document.getElementById('comp-container');
+  if (!list.length) { container.innerHTML = '<div class="empty-msg">保存した物件がここに表示されます</div>'; return; }
+
+  const validScores = list.filter(p => !p.eliminated && p.total !== null);
+  const bestTotal = validScores.length ? Math.max(...validScores.map(p => p.total)) : null;
+  const bestWalk  = Math.min(...list.filter(p => p.walk  != null).map(p => p.walk));
+  const bestShina = Math.min(...list.filter(p => p.shina != null).map(p => p.shina));
+  const bestPrice = Math.min(...list.filter(p => p.price != null).map(p => p.price));
+  const bestAge   = Math.min(...list.filter(p => p.age   != null).map(p => p.age));
+
+  const grid = document.createElement('div');
+  grid.className = 'comp-grid';
+
+  list.forEach(prop => {
+    const c = document.createElement('div');
+    c.className = 'comp-card' + (prop.total === bestTotal && !prop.eliminated ? ' best-score' : '');
+    c.onclick = () => loadToForm(prop);
+    const sc = prop.eliminated ? 'var(--red)' : scoreColor(prop.total);
+    const tier = tierInfo(prop.total, prop.eliminated);
+    const row = (lbl, val, unit, best) =>
+      val != null ? `<span>${lbl}<span class="val${best?' best':''}">${typeof val==='number'&&val>=1000?val.toLocaleString():val}${unit}</span></span>` : '';
+    c.innerHTML = `
+      <button class="comp-del" onclick="event.stopPropagation();deleteProperty(${prop.id})">✕</button>
+      <div class="comp-name" title="${prop.name}">${prop.name}</div>
+      <div class="comp-score" style="color:${sc}">${prop.eliminated?'NG':prop.total??'—'}<span style="font-size:.42em;color:var(--muted)">${prop.eliminated?'':'/100'}</span></div>
+      <div class="comp-tier"  style="color:${sc}">${prop.eliminated?'⛔ 足切り':tier.emoji+' '+(prop.total!=null?tier.short:'入力中')}</div>
+      <div class="comp-rows">
+        ${row('🚶 ',prop.walk, '分', prop.walk===bestWalk)}
+        ${row('🚄 ',prop.shina,'分', prop.shina===bestShina)}
+        ${row('💰 ',prop.price,'万', prop.price===bestPrice)}
+        ${row('🏗 築',prop.age,'年', prop.age===bestAge)}
+      </div>
+      ${prop.eliminated ? `<div class="comp-ng">⛔ ${prop.ngR[0]}</div>` : ''}
+    `;
+    grid.appendChild(c);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(grid);
+
+  if (validScores.length >= 2) {
+    const best = list.find(p => p.total === bestTotal && !p.eliminated);
+    const s = document.createElement('div');
+    s.style.cssText = 'margin-top:10px;font-size:.72em;color:var(--muted);text-align:center;padding-top:8px;border-top:1px solid var(--border)';
+    s.textContent = `🏆 現在1位: ${best?.name||'—'} (${bestTotal}点)`;
+    container.appendChild(s);
+  }
+}
+
+// ── Init ──
+renderComp();
+recalc();
+</script>
+</body>
+</html>

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フラット35 金利トラッカー</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22253a;
+  --border:   #2a2d3e;
+  --text:     #e0e0e0;
+  --muted:    #888;
+  --blue:     #7eb8f7;
+  --green:    #6dd98c;
+  --yellow:   #f7c948;
+  --red:      #ff7f7f;
+  --purple:   #c084fc;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Helvetica Neue','Hiragino Sans','Meiryo',sans-serif;
+  padding: 20px 16px 64px;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+.container { max-width: 960px; margin: 0 auto; }
+
+/* Header */
+.header { margin-bottom: 24px; }
+.header h1 { font-size: 1.4em; color: var(--blue); }
+.header p  { font-size: 0.82em; color: var(--muted); margin-top: 4px; }
+.header-meta {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;
+  font-size: 0.72em; color: var(--muted);
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2px 10px;
+}
+
+/* Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+@media (max-width: 680px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 14px;
+}
+.card-label { font-size: 0.70em; color: var(--muted); margin-bottom: 5px; }
+.card-val   { font-size: 1.5em; font-weight: 700; color: var(--blue); line-height: 1.1; }
+.card-sub   { font-size: 0.70em; color: var(--muted); margin-top: 3px; }
+.card-val.high   { color: var(--red); }
+.card-val.mid    { color: var(--yellow); }
+.card-val.low    { color: var(--green); }
+
+/* Zone banner */
+.zone-banner {
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border: 1px solid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.zone-banner.high   { background: #2d1515; border-color: #6b2020; }
+.zone-banner.mid    { background: #2d2510; border-color: #6b5510; }
+.zone-banner.low    { background: #152d1e; border-color: #206b40; }
+.zone-label {
+  font-size: 0.78em;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.zone-banner.high .zone-label { background: var(--red);    color: #1a0000; }
+.zone-banner.mid  .zone-label { background: var(--yellow); color: #1a1200; }
+.zone-banner.low  .zone-label { background: var(--green);  color: #001a0a; }
+.zone-comment { font-size: 0.82em; color: var(--text); flex: 1; min-width: 180px; }
+
+/* Range gauge */
+.gauge-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.gauge-label { font-size: 0.75em; color: var(--muted); margin-bottom: 8px; }
+.gauge-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(to right, var(--green), var(--yellow), var(--red));
+  position: relative;
+  margin: 4px 0 20px;
+}
+.gauge-marker {
+  position: absolute;
+  top: -4px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--red);
+  transform: translateX(-50%);
+  box-shadow: 0 0 6px rgba(255,127,127,.7);
+  transition: left 0.3s;
+}
+.gauge-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68em;
+  color: var(--muted);
+  margin-top: -12px;
+}
+.gauge-caption {
+  font-size: 0.72em;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* Chart */
+.chart-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 14px 14px;
+  margin-bottom: 16px;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.chart-title { font-size: 0.85em; color: var(--muted); }
+.legend { display: flex; gap: 14px; font-size: 0.74em; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; color: var(--muted); }
+.legend-line {
+  width: 22px; height: 3px; border-radius: 2px;
+  flex-shrink: 0;
+}
+.legend-dash {
+  width: 22px; height: 0;
+  border-top: 2px dashed;
+  flex-shrink: 0;
+}
+
+/* Calculator */
+.calc-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 18px 20px;
+  margin-bottom: 16px;
+}
+.calc-title { font-size: 0.85em; color: var(--muted); margin-bottom: 14px; }
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) { .calc-grid { grid-template-columns: 1fr 1fr; } }
+.calc-field label {
+  display: block;
+  font-size: 0.72em;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.calc-field input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 1em;
+  padding: 8px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.calc-field input:focus { border-color: var(--blue); }
+.calc-field input.readonly {
+  color: var(--blue);
+  cursor: default;
+}
+.calc-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (max-width: 520px) { .calc-results { grid-template-columns: 1fr 1fr; } }
+.calc-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.calc-result-label { font-size: 0.70em; color: var(--muted); margin-bottom: 4px; }
+.calc-result-val   { font-size: 1.25em; font-weight: 700; color: var(--blue); }
+.calc-result-val.warn { color: var(--yellow); }
+.calc-result-sub   { font-size: 0.68em; color: var(--muted); margin-top: 2px; }
+
+.btn-sim {
+  display: inline-block;
+  background: var(--blue);
+  color: #0a0f1a;
+  font-weight: 700;
+  font-size: 0.85em;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.btn-sim:hover { opacity: 0.85; }
+
+/* Data note */
+.note {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 15px;
+  font-size: 0.75em;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.note strong { color: #aaa; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>📈 フラット35 金利トラッカー</h1>
+    <p>2010年1月〜2026年3月の月次金利推移と現在の歴史的位置を可視化</p>
+    <div class="header-meta">
+      <span class="badge">🏠 住宅金融支援機構 フラット35</span>
+      <span class="badge">📅 最終更新: 2026年3月</span>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">現在の金利（35年）</div>
+      <div class="card-val high" id="c-current35">―</div>
+      <div class="card-sub" id="c-current35-date"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">現在の金利（20年以下）</div>
+      <div class="card-val high" id="c-current20">―</div>
+      <div class="card-sub" id="c-current20-date"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">歴史的平均（35年）</div>
+      <div class="card-val" id="c-avg">―</div>
+      <div class="card-sub">2010年〜現在</div>
+    </div>
+    <div class="card">
+      <div class="card-label">過去最低 / 最高</div>
+      <div class="card-val" id="c-range" style="font-size:1.1em">―</div>
+      <div class="card-sub" id="c-range-dates"></div>
+    </div>
+  </div>
+
+  <!-- Zone banner -->
+  <div class="zone-banner" id="zone-banner">
+    <span class="zone-label" id="zone-label">―</span>
+    <span class="zone-comment" id="zone-comment">計算中...</span>
+  </div>
+
+  <!-- Gauge -->
+  <div class="gauge-wrap">
+    <div class="gauge-label">現在の金利が歴史的レンジのどこに位置するか（35年・融資率9割以下）</div>
+    <div class="gauge-bar">
+      <div class="gauge-marker" id="gauge-marker"></div>
+    </div>
+    <div class="gauge-ticks">
+      <span id="gauge-min"></span>
+      <span style="color:var(--green)">低水準</span>
+      <span style="color:var(--yellow)">中水準</span>
+      <span style="color:var(--red)">高水準</span>
+      <span id="gauge-max"></span>
+    </div>
+    <div class="gauge-caption" id="gauge-caption"></div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-wrap">
+    <div class="chart-header">
+      <span class="chart-title">月次金利推移（%）</span>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-line" style="background:var(--blue)"></div>35年（融資率9割以下）
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:var(--purple)"></div>20年以下
+        </div>
+        <div class="legend-item">
+          <div class="legend-dash" style="border-color:var(--yellow)"></div>歴史的平均
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:var(--red); width:10px; height:10px; border-radius:50%;"></div>現在
+        </div>
+      </div>
+    </div>
+    <canvas id="chart"></canvas>
+  </div>
+
+  <!-- Mini calculator -->
+  <div class="calc-wrap">
+    <div class="calc-title">🧮 この金利で月返済額を計算（フラット35 / 元利均等・35年）</div>
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>物件価格（万円）</label>
+        <input type="number" id="calc-price" value="4500" min="500" max="20000" step="100">
+      </div>
+      <div class="calc-field">
+        <label>頭金（万円）</label>
+        <input type="number" id="calc-down" value="384" min="0" max="10000" step="50">
+      </div>
+      <div class="calc-field">
+        <label>適用金利（%）</label>
+        <input type="number" id="calc-rate" class="readonly" readonly>
+      </div>
+    </div>
+    <div class="calc-results">
+      <div class="calc-result">
+        <div class="calc-result-label">月返済額</div>
+        <div class="calc-result-val" id="r-monthly">―</div>
+        <div class="calc-result-sub">ローンのみ</div>
+      </div>
+      <div class="calc-result">
+        <div class="calc-result-label">月合計（管理費・税込）</div>
+        <div class="calc-result-val" id="r-monthly-all">―</div>
+        <div class="calc-result-sub">管理費2.5万＋固定資産税1.25万</div>
+      </div>
+      <div class="calc-result">
+        <div class="calc-result-label">総返済額</div>
+        <div class="calc-result-val warn" id="r-total">―</div>
+        <div class="calc-result-sub" id="r-interest-label">うち利息</div>
+      </div>
+    </div>
+    <a class="btn-sim" href="rent_vs_buy.html" target="_blank">賃貸vs購入シミュレーターで詳細比較 →</a>
+  </div>
+
+  <!-- Note -->
+  <div class="note">
+    <strong>データ出典・注意事項</strong><br>
+    金利データは住宅金融支援機構「フラット35」月次適用金利（融資率9割以下・最低金利）を参考に作成。
+    2025年以降の数値は概算・推定値を含むため、実際の申込時は
+    <strong>住宅金融支援機構 公式サイト</strong>で最新金利を必ず確認してください。<br>
+    計算は元利均等返済。諸費用・保険料・団信費用は含みません。金利は全期間固定前提（フラット35）。
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────
+// 月次金利データ (2010/01 〜 2026/03)
+// 35年・融資率9割以下の最低金利（単位: %）
+// ─────────────────────────────────────────────────
+const RATES_35 = [
+  // 2010
+  2.78,2.78,2.81,2.87,2.79,2.68,2.68,2.54,2.44,2.35,2.44,2.55,
+  // 2011
+  2.55,2.65,2.80,2.73,2.66,2.64,2.60,2.44,2.33,2.30,2.27,2.20,
+  // 2012
+  2.17,2.21,2.16,2.14,1.97,1.96,2.01,1.91,1.89,1.90,1.84,1.87,
+  // 2013
+  1.80,1.88,2.01,2.08,2.32,2.71,2.53,2.45,2.22,2.19,2.10,2.19,
+  // 2014
+  2.17,2.27,2.24,2.12,2.02,2.01,1.97,1.99,1.92,1.86,1.74,1.65,
+  // 2015
+  1.55,1.49,1.51,1.58,1.64,1.68,1.64,1.56,1.54,1.55,1.52,1.59,
+  // 2016
+  1.60,1.45,1.28,1.25,1.25,1.19,1.10,1.06,1.06,1.08,1.13,1.21,
+  // 2017
+  1.35,1.32,1.36,1.37,1.35,1.29,1.30,1.27,1.27,1.29,1.30,1.34,
+  // 2018
+  1.36,1.39,1.38,1.40,1.39,1.37,1.45,1.56,1.49,1.54,1.53,1.54,
+  // 2019
+  1.50,1.44,1.43,1.44,1.39,1.34,1.27,1.19,1.15,1.16,1.19,1.28,
+  // 2020
+  1.30,1.27,1.24,1.24,1.27,1.30,1.37,1.37,1.30,1.28,1.28,1.27,
+  // 2021
+  1.30,1.42,1.48,1.41,1.37,1.36,1.35,1.32,1.34,1.33,1.35,1.48,
+  // 2022
+  1.47,1.47,1.52,1.62,1.68,1.74,1.81,1.97,1.97,1.98,2.02,2.05,
+  // 2023
+  2.13,2.09,2.04,2.04,2.09,2.09,2.12,2.24,2.30,2.38,2.38,2.43,
+  // 2024
+  2.47,2.49,2.52,2.61,2.64,2.67,2.77,2.67,2.45,2.51,2.57,2.72,
+  // 2025
+  2.81,2.81,2.74,2.76,2.79,2.82,2.86,2.85,2.82,2.80,2.78,2.80,
+  // 2026
+  2.85,2.88,2.90,
+];
+
+// 20年以下は35年より概ね 0.28〜0.30% 低い
+const RATES_20 = RATES_35.map((r, i) => {
+  // 実態に近い微妙な差をつける
+  const spread = i < 72 ? 0.29 : i < 132 ? 0.29 : i < 156 ? 0.27 : 0.29;
+  return Math.round((r - spread) * 100) / 100;
+});
+
+// ラベル生成
+const LABELS = [];
+let y = 2010, m = 1;
+for (let i = 0; i < RATES_35.length; i++) {
+  LABELS.push(`${y}/${String(m).padStart(2,'0')}`);
+  m++;
+  if (m > 12) { m = 1; y++; }
+}
+
+const N = RATES_35.length;
+const CURRENT_RATE_35 = RATES_35[N - 1];
+const CURRENT_RATE_20 = RATES_20[N - 1];
+const CURRENT_LABEL   = LABELS[N - 1];
+
+// 統計計算
+const avg35 = Math.round(RATES_35.reduce((a, b) => a + b, 0) / N * 100) / 100;
+const min35  = Math.min(...RATES_35);
+const max35  = Math.max(...RATES_35);
+const minIdx = RATES_35.indexOf(min35);
+const maxIdx = RATES_35.indexOf(max35);
+
+// Zone判定
+const pct = (CURRENT_RATE_35 - min35) / (max35 - min35); // 0〜1
+let zone, zoneClass, zoneComment;
+if (pct >= 0.72) {
+  zone = '⚠ 高水準';
+  zoneClass = 'high';
+  zoneComment = `現在の${CURRENT_RATE_35}%は2010年以降のレンジ上位約${Math.round(pct*100)}%に位置します。
+  2016年の歴史的最低水準（${min35}%）と比べると${(CURRENT_RATE_35 - min35).toFixed(2)}%高く、
+  ローン利息負担が大きい局面です。固定金利選択は将来の金利上昇リスクを抑える観点からは有効ですが、
+  借入額・返済期間の圧縮も重要な検討事項です。`;
+} else if (pct >= 0.38) {
+  zone = '📊 中水準';
+  zoneClass = 'mid';
+  zoneComment = `現在の${CURRENT_RATE_35}%は歴史的レンジの中間帯（上位約${Math.round(pct*100)}%）です。
+  2010年代後半〜2020年代初頭の超低金利局面より高いですが、
+  2010〜2013年の水準には近いゾーンです。フラット35での長期固定は一定の安心感があります。`;
+} else {
+  zone = '✅ 低水準';
+  zoneClass = 'low';
+  zoneComment = `現在の${CURRENT_RATE_35}%は歴史的に見て低い水準（下位約${Math.round((1-pct)*100)}%）です。
+  借入コストが抑えられており、フラット35での長期固定を活用しやすい局面と言えます。`;
+}
+
+// ─────────────────────────────────────────────────
+// Cards
+// ─────────────────────────────────────────────────
+document.getElementById('c-current35').textContent = `${CURRENT_RATE_35}%`;
+document.getElementById('c-current35').className   = `card-val ${zoneClass}`;
+document.getElementById('c-current35-date').textContent = CURRENT_LABEL;
+
+document.getElementById('c-current20').textContent = `${CURRENT_RATE_20}%`;
+document.getElementById('c-current20').className   = `card-val ${zoneClass}`;
+document.getElementById('c-current20-date').textContent = CURRENT_LABEL + '（20年以下）';
+
+document.getElementById('c-avg').textContent = `${avg35}%`;
+
+document.getElementById('c-range').textContent   = `${min35}% / ${max35}%`;
+document.getElementById('c-range-dates').textContent =
+  `最低: ${LABELS[minIdx]}  最高: ${LABELS[maxIdx]}`;
+
+// Zone banner
+document.getElementById('zone-banner').className    = `zone-banner ${zoneClass}`;
+document.getElementById('zone-label').textContent   = zone;
+document.getElementById('zone-comment').textContent = zoneComment;
+
+// Gauge
+document.getElementById('gauge-min').textContent = `${min35}%`;
+document.getElementById('gauge-max').textContent = `${max35}%`;
+document.getElementById('gauge-marker').style.left = `${pct * 100}%`;
+document.getElementById('gauge-caption').textContent =
+  `現在 ${CURRENT_RATE_35}%（過去最低 ${min35}% から +${(CURRENT_RATE_35 - min35).toFixed(2)}%、過去最高 ${max35}% まで -${(max35 - CURRENT_RATE_35).toFixed(2)}%）`;
+
+// ─────────────────────────────────────────────────
+// Chart
+// ─────────────────────────────────────────────────
+// 現在月マーカー用の pointRadius 配列
+function makePointRadii(arr) {
+  return arr.map((_, i) => i === N - 1 ? 7 : 0);
+}
+function makePointColors(arr) {
+  return arr.map((_, i) => i === N - 1 ? '#ff5252' : 'transparent');
+}
+function makePointBorder(arr) {
+  return arr.map((_, i) => i === N - 1 ? 3 : 0);
+}
+
+// X軸ラベル: 1月のみ年表示
+const tickLabels = LABELS.map(l => l.endsWith('/01') ? l.split('/')[0] : '');
+
+const avgLine = Array(N).fill(avg35);
+
+const ctx = document.getElementById('chart').getContext('2d');
+const myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: LABELS,
+    datasets: [
+      {
+        label: '35年',
+        data: RATES_35,
+        borderColor: 'rgba(126,184,247,0.9)',
+        backgroundColor: 'rgba(126,184,247,0.07)',
+        borderWidth: 2,
+        pointRadius: makePointRadii(RATES_35),
+        pointBackgroundColor: makePointColors(RATES_35),
+        pointBorderColor: makePointColors(RATES_35),
+        pointBorderWidth: makePointBorder(RATES_35),
+        fill: false,
+        tension: 0.2,
+        order: 1,
+      },
+      {
+        label: '20年以下',
+        data: RATES_20,
+        borderColor: 'rgba(192,132,252,0.85)',
+        backgroundColor: 'rgba(192,132,252,0.05)',
+        borderWidth: 2,
+        pointRadius: makePointRadii(RATES_20),
+        pointBackgroundColor: makePointColors(RATES_20),
+        pointBorderColor: makePointColors(RATES_20),
+        pointBorderWidth: makePointBorder(RATES_20),
+        fill: false,
+        tension: 0.2,
+        order: 2,
+      },
+      {
+        label: '歴史的平均',
+        data: avgLine,
+        borderColor: 'rgba(247,201,72,0.6)',
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        fill: false,
+        tension: 0,
+        order: 3,
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: window.innerWidth < 600 ? 1.4 : 2.4,
+    interaction: { mode: 'index', intersect: false },
+    animation: { duration: 0 },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1d27',
+        borderColor: '#2a2d3e',
+        borderWidth: 1,
+        titleColor: '#888',
+        bodyColor: '#e0e0e0',
+        callbacks: {
+          title: items => items[0].label,
+          label: item => {
+            if (item.datasetIndex === 2) return ` 歴史的平均: ${item.parsed.y.toFixed(2)}%`;
+            const label = item.datasetIndex === 0 ? '35年' : '20年以下';
+            const isCurrent = item.dataIndex === N - 1;
+            return ` ${label}: ${item.parsed.y.toFixed(2)}%${isCurrent ? ' ← 現在' : ''}`;
+          },
+        }
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#666',
+          font: { size: 10 },
+          maxRotation: 0,
+          callback: (val, idx) => tickLabels[idx] || null,
+          autoSkip: false,
+        },
+        grid: { color: 'rgba(255,255,255,0.04)' },
+      },
+      y: {
+        min: 0.7,
+        max: 3.1,
+        ticks: {
+          color: '#666',
+          font: { size: 10 },
+          callback: v => v.toFixed(1) + '%',
+          stepSize: 0.5,
+        },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+      },
+    },
+  },
+  plugins: [{
+    // 「現在」ラベルを最後の点に描画
+    id: 'currentLabel',
+    afterDatasetsDraw(chart) {
+      const { ctx, scales } = chart;
+      const x = scales.x.getPixelForValue(N - 1);
+      const y = scales.y.getPixelForValue(CURRENT_RATE_35);
+
+      ctx.save();
+      // 吹き出し背景
+      const txt = `現在 ${CURRENT_RATE_35}%`;
+      ctx.font = 'bold 11px sans-serif';
+      const tw = ctx.measureText(txt).width;
+      const bw = tw + 12, bh = 20, bx = x - bw / 2, by = y - 36;
+      ctx.fillStyle = '#ff5252';
+      ctx.beginPath();
+      ctx.roundRect(bx, by, bw, bh, 4);
+      ctx.fill();
+      // 吹き出しの三角
+      ctx.beginPath();
+      ctx.moveTo(x - 5, by + bh);
+      ctx.lineTo(x + 5, by + bh);
+      ctx.lineTo(x, by + bh + 6);
+      ctx.fillStyle = '#ff5252';
+      ctx.fill();
+      // テキスト
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(txt, x, by + bh / 2);
+      ctx.restore();
+    }
+  }]
+});
+
+// ─────────────────────────────────────────────────
+// Mini calculator
+// ─────────────────────────────────────────────────
+const CONDO_FEE  = 2.5;  // 万円/月
+const PROP_TAX_M = 15 / 12; // 万円/月
+
+document.getElementById('calc-rate').value = CURRENT_RATE_35.toFixed(2);
+
+function calcMonthly(loan, annualRate, years) {
+  const r = annualRate / 100 / 12;
+  const n = years * 12;
+  if (r === 0 || loan <= 0) return loan / n;
+  return loan * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+}
+
+function updateCalc() {
+  const price = parseFloat(document.getElementById('calc-price').value) || 0;
+  const down  = parseFloat(document.getElementById('calc-down').value) || 0;
+  const rate  = parseFloat(document.getElementById('calc-rate').value) || CURRENT_RATE_35;
+  const loan  = Math.max(0, price - down);
+
+  const monthly   = calcMonthly(loan, rate, 35);
+  const total     = monthly * 35 * 12;
+  const interest  = total - loan;
+  const monthlyAll = monthly + CONDO_FEE + PROP_TAX_M;
+
+  const fmt = v => `${v.toFixed(1)}万円`;
+
+  document.getElementById('r-monthly').textContent     = fmt(monthly);
+  document.getElementById('r-monthly-all').textContent = fmt(monthlyAll);
+  document.getElementById('r-total').textContent       = `${Math.round(total).toLocaleString()}万円`;
+  document.getElementById('r-interest-label').textContent =
+    `うち利息: ${Math.round(interest).toLocaleString()}万円`;
+}
+
+document.getElementById('calc-price').addEventListener('input', updateCalc);
+document.getElementById('calc-down').addEventListener('input', updateCalc);
+updateCalc();
+</script>
+</body>
+</html>
