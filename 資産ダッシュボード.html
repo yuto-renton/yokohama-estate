@@ -58,9 +58,29 @@
     @media (max-width: 600px) {
       th, td { padding: 7px 5px; font-size: 11px; }
     }
+    .site-nav {
+      background: #0a0d18;
+      border-bottom: 1px solid #1a1a3a;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-nav a {
+      color: #555;
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.15s;
+    }
+    .site-nav a:hover { color: #7eb8f7; }
+    .site-nav-step { font-size: 11px; color: #444; letter-spacing: 0.08em; }
   </style>
 </head>
 <body>
+  <div class="site-nav">
+    <a href="index.html">← ツール一覧</a>
+    <span class="site-nav-step">STEP 4 / 4</span>
+  </div>
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react,env">

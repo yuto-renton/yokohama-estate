@@ -28,29 +28,86 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Helvetica Neue', 'Hiragino Sans', 'Meiryo', sans-serif;
-  padding: 20px 16px 60px;
+  padding: 0 16px 60px;
   min-height: 100vh;
   line-height: 1.5;
 }
 
 .container { max-width: 900px; margin: 0 auto; }
 
+/* ── Top nav ── */
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.topnav-back {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.80em;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.topnav-back:hover { color: var(--blue); }
+.topnav-step { font-size: 0.68em; color: var(--muted); letter-spacing: .08em; }
+
 /* ── Header ── */
-.header { margin-bottom: 28px; }
-.header h1 { font-size: 1.4em; color: var(--blue); font-weight: 700; }
+.header { margin-bottom: 24px; }
+.header h1 { font-size: 1.35em; color: var(--blue); font-weight: 700; }
 .header p { font-size: 0.82em; color: var(--muted); margin-top: 4px; }
-.badge {
-  display: inline-block; font-size: 0.72em; padding: 2px 8px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 20px; color: var(--muted); margin-top: 6px;
+
+/* ── Presets ── */
+.presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.preset-label {
+  font-size: 0.70em;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.preset-btn {
+  font-size: 0.74em;
+  padding: 5px 13px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: var(--surface);
+  border-color: var(--blue);
+  color: var(--blue);
 }
 
 /* ── Controls ── */
+.ctrl-section { margin-bottom: 16px; }
+.ctrl-section-label {
+  font-size: 0.68em;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
 .controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
 }
 @media (max-width: 600px) { .controls { grid-template-columns: 1fr; } }
 
@@ -58,7 +115,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 13px 15px;
 }
 .ctrl-label {
   display: flex;
@@ -98,6 +155,40 @@ input[type=range]::-moz-range-thumb {
   border: none;
 }
 
+/* ── Assumptions (collapsible) ── */
+.assumptions-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.assumptions-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.78em;
+  padding: 11px 15px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: color 0.15s;
+}
+.assumptions-toggle:hover { color: var(--text); }
+.assumptions-body {
+  display: none;
+  padding: 0 15px 13px;
+  font-size: 0.76em;
+  color: var(--muted);
+  line-height: 1.9;
+  border-top: 1px solid var(--border);
+}
+.assumptions-body.open { display: block; }
+.assumptions-body strong { color: #aaa; }
+
 /* ── Summary Cards ── */
 .cards {
   display: grid;
@@ -125,7 +216,7 @@ input[type=range]::-moz-range-thumb {
 .card-val.good { color: var(--green); }
 .card-val.warn { color: var(--yellow); }
 .card-val.bad  { color: var(--red); }
-.card-sub { font-size: 0.7em; color: var(--muted); margin-top: 4px; }
+.card-sub { font-size: 0.70em; color: var(--muted); margin-top: 4px; }
 
 /* ── Chart ── */
 .chart-wrap {
@@ -165,16 +256,37 @@ input[type=range]::-moz-range-thumb {
 .breakeven-banner.bad  { background: #3d1a1a; border: 1px solid #6b2a2a; color: var(--red); }
 .banner-icon { font-size: 1.3em; }
 
-/* ── Detail Table ── */
+/* ── Detail Table (collapsible) ── */
 .detail-wrap {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px;
   margin-bottom: 20px;
+  overflow: hidden;
+}
+.detail-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.85em;
+  padding: 13px 16px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: color 0.15s;
+}
+.detail-toggle:hover { color: var(--text); }
+.detail-toggle-icon { font-size: 0.80em; }
+.detail-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
   overflow-x: auto;
 }
-.detail-title { font-size: 0.85em; color: var(--muted); margin-bottom: 12px; }
+.detail-body.open { display: block; }
 table { width: 100%; border-collapse: collapse; font-size: 0.8em; min-width: 460px; }
 th { background: var(--surface2); color: var(--muted); padding: 8px 10px; text-align: right; font-weight: 500; }
 th:first-child { text-align: left; }
@@ -185,92 +297,102 @@ tr.sale-row td { color: var(--green); }
 .num { font-variant-numeric: tabular-nums; }
 .diff-pos { color: var(--green); }
 .diff-neg { color: var(--red); }
-
-/* ── Assumptions ── */
-.assumptions {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 0.78em;
-  color: var(--muted);
-  line-height: 1.8;
-}
-.assumptions strong { color: #aaa; }
-
-/* ── Mode toggle ── */
-.toggle-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-.toggle-btn {
-  font-size: 0.78em;
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.toggle-btn.active {
-  background: var(--blue);
-  color: #0f1117;
-  border-color: var(--blue);
-  font-weight: 700;
-}
 </style>
 </head>
 <body>
 <div class="container">
 
-  <!-- Header -->
-  <div class="header">
-    <h1>🏠 賃貸 vs 購入 シミュレーター</h1>
-    <p>横浜 3LDK 中古マンション購入を検討するゆーと専用</p>
-    <span class="badge">住宅補助 月4万円 × 8年 前提 ／ フラット35</span>
+  <!-- Nav -->
+  <div class="topnav">
+    <a href="index.html" class="topnav-back">← ツール一覧</a>
+    <span class="topnav-step">STEP 2 / 4</span>
   </div>
 
-  <!-- Sliders -->
-  <div class="controls">
-    <div class="ctrl-card">
-      <div class="ctrl-label">
-        <span>🏢 物件価格</span>
-        <span class="ctrl-val" id="lbl-price">4,500万円</span>
+  <!-- Header -->
+  <div class="header">
+    <h1>📊 賃貸 vs 購入 シミュレーター</h1>
+    <p>横浜エリア 中古マンション — 賃貸継続と購入の総コストを比較します</p>
+  </div>
+
+  <!-- Presets -->
+  <div class="presets">
+    <span class="preset-label">よくある条件：</span>
+    <button class="preset-btn" onclick="applyPreset(4000, 2.0, 400, 11.0)">スタンダード 4,000万</button>
+    <button class="preset-btn active" onclick="applyPreset(4500, 2.0, 384, 12.2)">スタンダード 4,500万</button>
+    <button class="preset-btn" onclick="applyPreset(5500, 1.8, 800, 14.0)">プレミアム 5,500万</button>
+  </div>
+
+  <!-- Group 1: 購入・ローン条件 -->
+  <div class="ctrl-section">
+    <div class="ctrl-section-label">購入・ローン条件</div>
+    <div class="controls">
+      <div class="ctrl-card">
+        <div class="ctrl-label">
+          <span>物件価格</span>
+          <span class="ctrl-val" id="lbl-price">4,500万円</span>
+        </div>
+        <input type="range" id="sl-price" min="3000" max="6000" step="100" value="4500">
       </div>
-      <input type="range" id="sl-price" min="3000" max="6000" step="100" value="4500">
+      <div class="ctrl-card">
+        <div class="ctrl-label">
+          <span>フラット35 金利</span>
+          <span class="ctrl-val" id="lbl-rate">2.0%</span>
+        </div>
+        <input type="range" id="sl-rate" min="1.5" max="3.0" step="0.1" value="2.0">
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-label">
+          <span>頭金</span>
+          <span class="ctrl-val" id="lbl-down">384万円</span>
+        </div>
+        <input type="range" id="sl-down" min="0" max="1500" step="50" value="384">
+      </div>
     </div>
-    <div class="ctrl-card">
-      <div class="ctrl-label">
-        <span>📈 フラット35 金利</span>
-        <span class="ctrl-val" id="lbl-rate">2.0%</span>
+  </div>
+
+  <!-- Group 2: 比較・売却シナリオ -->
+  <div class="ctrl-section">
+    <div class="ctrl-section-label">比較・売却シナリオ</div>
+    <div class="controls">
+      <div class="ctrl-card">
+        <div class="ctrl-label">
+          <span>現在の月額賃料</span>
+          <span class="ctrl-val" id="lbl-rent">12.2万円</span>
+        </div>
+        <input type="range" id="sl-rent" min="80" max="200" step="1" value="122">
       </div>
-      <input type="range" id="sl-rate" min="1.5" max="3.0" step="0.1" value="2.0">
+      <div class="ctrl-card">
+        <div class="ctrl-label">
+          <span>売却予定（購入から）</span>
+          <span class="ctrl-val" id="lbl-saleyear">25年後</span>
+        </div>
+        <input type="range" id="sl-saleyear" min="10" max="35" step="5" value="25">
+      </div>
+      <div class="ctrl-card">
+        <div class="ctrl-label">
+          <span>売却価格（購入価格比）</span>
+          <span class="ctrl-val" id="lbl-saleratio">70%</span>
+        </div>
+        <input type="range" id="sl-saleratio" min="40" max="100" step="5" value="70">
+      </div>
     </div>
-    <div class="ctrl-card">
-      <div class="ctrl-label">
-        <span>💰 頭金</span>
-        <span class="ctrl-val" id="lbl-down">384万円</span>
-      </div>
-      <input type="range" id="sl-down" min="0" max="1200" step="50" value="384">
-    </div>
-    <div class="ctrl-card">
-      <div class="ctrl-label">
-        <span>🏠 月額賃料</span>
-        <span class="ctrl-val" id="lbl-rent">12.2万円</span>
-      </div>
-      <input type="range" id="sl-rent" min="80" max="200" step="1" value="122">
-    </div>
-    <div class="ctrl-card">
-      <div class="ctrl-label">
-        <span>📅 売却予定（購入から）</span>
-        <span class="ctrl-val" id="lbl-saleyear">25年後</span>
-      </div>
-      <input type="range" id="sl-saleyear" min="10" max="35" step="5" value="25">
-    </div>
-    <div class="ctrl-card">
-      <div class="ctrl-label">
-        <span>🏷 売却価格（購入価格比）</span>
-        <span class="ctrl-val" id="lbl-saleratio">70%</span>
-      </div>
-      <input type="range" id="sl-saleratio" min="40" max="100" step="5" value="70">
+  </div>
+
+  <!-- Fixed assumptions (collapsible) -->
+  <div class="assumptions-wrap" style="margin-bottom:20px">
+    <button class="assumptions-toggle" onclick="toggleAssumptions()">
+      <span>前提条件（固定値）を確認</span>
+      <span id="assump-icon">▼</span>
+    </button>
+    <div class="assumptions-body" id="assump-body">
+      <strong>住宅補助:</strong> 月4万円 × 8年（賃貸継続時のみ。購入後は支給停止を前提）／
+      <strong>管理費・修繕積立:</strong> 月2.5万円 ／
+      <strong>固定資産税:</strong> 年15万円 ／
+      <strong>購入諸費用:</strong> 物件価格の4% ／
+      <strong>ローン:</strong> フラット35（全期間固定・元利均等）、返済35年 ／
+      賃料は将来にわたって変動なしと仮定 ／
+      売却後は同額の賃料で賃貸に戻る前提 ／
+      運用益・投資効果・インフレは未考慮
     </div>
   </div>
 
@@ -294,7 +416,7 @@ tr.sale-row td { color: var(--green); }
     <div class="card">
       <div class="card-label">売却後の差額</div>
       <div class="card-val" id="card-diff">―</div>
-      <div class="card-sub">賃貸コスト - 購入コスト</div>
+      <div class="card-sub">賃貸コスト − 購入コスト</div>
     </div>
   </div>
 
@@ -323,33 +445,26 @@ tr.sale-row td { color: var(--green); }
     <canvas id="chart" style="width:100%;max-height:380px;"></canvas>
   </div>
 
-  <!-- Detail Table -->
+  <!-- Detail Table (collapsible) -->
   <div class="detail-wrap">
-    <div class="detail-title">📊 年別コスト詳細</div>
-    <table id="detail-table">
-      <thead>
-        <tr>
-          <th>年</th>
-          <th>賃貸 累積（万）</th>
-          <th>購入 累積（万）</th>
-          <th>購入＋売却（万）</th>
-          <th>差額（万）</th>
-        </tr>
-      </thead>
-      <tbody id="table-body"></tbody>
-    </table>
-  </div>
-
-  <!-- Assumptions -->
-  <div class="assumptions">
-    <strong>前提条件・注意事項</strong><br>
-    住宅補助: 月4万円 × 8年（賃貸継続時のみ。購入後は支給停止を前提）／
-    管理費・修繕積立: 月2.5万円 ／ 固定資産税: 年15万円 ／
-    購入諸費用: 物件価格の4% ／ ローン: フラット35（全期間固定・元利均等）、返済35年 ／
-    賃料は将来にわたって変動なしと仮定 ／
-    売却後は同額の賃料で賃貸に戻る前提 ／
-    運用益・投資効果・インフレは未考慮 ／
-    数値はあくまで参考試算です。
+    <button class="detail-toggle" onclick="toggleTable()">
+      <span>📊 年別コスト詳細</span>
+      <span class="detail-toggle-icon" id="table-toggle-icon">▼ 展開して確認</span>
+    </button>
+    <div class="detail-body" id="detail-body">
+      <table id="detail-table" style="margin-top:12px">
+        <thead>
+          <tr>
+            <th>年</th>
+            <th>賃貸 累積（万）</th>
+            <th>購入 累積（万）</th>
+            <th>購入＋売却（万）</th>
+            <th>差額（万）</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
   </div>
 
 </div>
@@ -394,63 +509,46 @@ function simulate(propPrice, downPayment, rate, rent, saleYear, saleRatio) {
   const mPmt = monthlyPayment(loan, rate, LOAN_YEARS);
   const annualBuyBase = mPmt * 12 + CONDO_FEE * 12 + PROP_TAX;
 
-  const rentalArr = [];
-  const buyArr    = [];   // no sale
-  const buySaleArr = [];  // with sale at saleYear
-
-  let rentalCum = 0;
-  let buyCum    = upfront;
-  let buySaleCum = upfront;
-  let soldAt = null;
+  const rentalArr = [], buyArr = [], buySaleArr = [];
+  let rentalCum = 0, buyCum = upfront, buySaleCum = upfront, soldAt = null;
 
   for (let y = 1; y <= SIM_YEARS; y++) {
-    // ── Rental ──
     const monthlyNetRent = y <= SUBSIDY_YEARS ? (rent - SUBSIDY) : rent;
     rentalCum += monthlyNetRent * 12;
     rentalArr.push(Math.round(rentalCum));
 
-    // ── Purchase, no sale ──
     const annualLoan = y <= LOAN_YEARS ? mPmt * 12 : 0;
     buyCum += annualLoan + CONDO_FEE * 12 + PROP_TAX;
     buyArr.push(Math.round(buyCum));
 
-    // ── Purchase + sale ──
     if (soldAt === null) {
       buySaleCum += annualLoan + CONDO_FEE * 12 + PROP_TAX;
       if (y === saleYear) {
         const salePrice = propPrice * saleRatio;
         const remaining = remainingBalance(loan, rate, LOAN_YEARS, y);
-        const proceeds = salePrice - remaining;
-        buySaleCum -= proceeds; // can go negative = profit
+        buySaleCum -= (salePrice - remaining);
         soldAt = y;
       }
     } else {
-      // After selling: renting again (no subsidy assumed to be gone)
       buySaleCum += rent * 12;
     }
     buySaleArr.push(Math.round(buySaleCum));
   }
 
-  // Break-even: first year where buySaleArr <= rentalArr
   let breakEven = null;
   for (let i = 0; i < SIM_YEARS; i++) {
-    if (buySaleArr[i] <= rentalArr[i]) {
-      breakEven = i + 1;
-      break;
-    }
+    if (buySaleArr[i] <= rentalArr[i]) { breakEven = i + 1; break; }
   }
 
   const atSaleYear = saleYear <= SIM_YEARS ? saleYear - 1 : SIM_YEARS - 1;
   const diffAtSale = rentalArr[atSaleYear] - buySaleArr[atSaleYear];
 
   return {
-    rentalArr, buyArr, buySaleArr,
-    breakEven,
+    rentalArr, buyArr, buySaleArr, breakEven,
     mPmt: Math.round(mPmt),
-    upfront: Math.round(upfront),
     diffAtSale: Math.round(diffAtSale),
     annualBuyBase: Math.round(annualBuyBase),
-    monthlyBuyTotal: Math.round((annualBuyBase) / 12 * 10) / 10,
+    monthlyBuyTotal: Math.round(annualBuyBase / 12 * 10) / 10,
   };
 }
 
@@ -463,40 +561,9 @@ const labels = Array.from({length: SIM_YEARS}, (_, i) => `${i+1}年`);
 const chartData = {
   labels,
   datasets: [
-    {
-      label: '賃貸継続',
-      data: [],
-      borderColor: 'rgba(126,184,247,0.9)',
-      backgroundColor: 'rgba(126,184,247,0.08)',
-      borderWidth: 2.5,
-      pointRadius: 0,
-      pointHoverRadius: 5,
-      fill: false,
-      tension: 0.1,
-    },
-    {
-      label: '購入（売却なし）',
-      data: [],
-      borderColor: 'rgba(255,127,127,0.75)',
-      backgroundColor: 'rgba(255,127,127,0.05)',
-      borderWidth: 2,
-      pointRadius: 0,
-      pointHoverRadius: 5,
-      fill: false,
-      tension: 0.1,
-      borderDash: [6, 3],
-    },
-    {
-      label: '購入＋売却後',
-      data: [],
-      borderColor: 'rgba(109,217,140,0.9)',
-      backgroundColor: 'rgba(109,217,140,0.08)',
-      borderWidth: 2.5,
-      pointRadius: 0,
-      pointHoverRadius: 5,
-      fill: false,
-      tension: 0.1,
-    },
+    { label: '賃貸継続',    data: [], borderColor: 'rgba(126,184,247,0.9)', backgroundColor: 'rgba(126,184,247,0.08)', borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: false, tension: 0.1 },
+    { label: '購入（売却なし）', data: [], borderColor: 'rgba(255,127,127,0.75)', backgroundColor: 'rgba(255,127,127,0.05)', borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, fill: false, tension: 0.1, borderDash: [6, 3] },
+    { label: '購入＋売却後', data: [], borderColor: 'rgba(109,217,140,0.9)', backgroundColor: 'rgba(109,217,140,0.08)', borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, fill: false, tension: 0.1 },
   ]
 };
 
@@ -504,42 +571,20 @@ const myChart = new Chart(ctx, {
   type: 'line',
   data: chartData,
   options: {
-    responsive: true,
-    maintainAspectRatio: true,
+    responsive: true, maintainAspectRatio: true,
     interaction: { mode: 'index', intersect: false },
     animation: { duration: 200 },
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#1a1d27',
-        borderColor: '#2a2d3e',
-        borderWidth: 1,
-        titleColor: '#888',
-        bodyColor: '#e0e0e0',
-        callbacks: {
-          label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}万円`,
-        }
+        backgroundColor: '#1a1d27', borderColor: '#2a2d3e', borderWidth: 1,
+        titleColor: '#888', bodyColor: '#e0e0e0',
+        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}万円` }
       },
-      annotation: {},
     },
     scales: {
-      x: {
-        ticks: {
-          color: '#666',
-          font: { size: 10 },
-          maxTicksLimit: 12,
-          callback: (v, i) => (i + 1) % 5 === 0 ? `${i+1}年` : '',
-        },
-        grid: { color: 'rgba(255,255,255,0.04)' },
-      },
-      y: {
-        ticks: {
-          color: '#666',
-          font: { size: 10 },
-          callback: v => `${(v/100).toFixed(0)}百万`,
-        },
-        grid: { color: 'rgba(255,255,255,0.06)' },
-      },
+      x: { ticks: { color: '#666', font: { size: 10 }, maxTicksLimit: 12, callback: (v, i) => (i + 1) % 5 === 0 ? `${i+1}年` : '' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#666', font: { size: 10 }, callback: v => `${(v/100).toFixed(0)}百万` }, grid: { color: 'rgba(255,255,255,0.06)' } },
     },
   }
 });
@@ -550,28 +595,27 @@ const myChart = new Chart(ctx, {
 function fmtMan(v) { return v.toLocaleString() + '万'; }
 
 function update() {
-  const propPrice = +document.getElementById('sl-price').value;
-  const rate      = +document.getElementById('sl-rate').value;
+  const propPrice   = +document.getElementById('sl-price').value;
+  const rate        = +document.getElementById('sl-rate').value;
   const downPayment = +document.getElementById('sl-down').value;
-  const rentRaw   = +document.getElementById('sl-rent').value;
-  const rent      = rentRaw / 10;  // stored as 10x for 0.1 step
-  const saleYear  = +document.getElementById('sl-saleyear').value;
-  const saleRatio = +document.getElementById('sl-saleratio').value / 100;
+  const rentRaw     = +document.getElementById('sl-rent').value;
+  const rent        = rentRaw / 10;
+  const saleYear    = +document.getElementById('sl-saleyear').value;
+  const saleRatio   = +document.getElementById('sl-saleratio').value / 100;
 
-  // Labels
-  document.getElementById('lbl-price').textContent = propPrice.toLocaleString() + '万円';
-  document.getElementById('lbl-rate').textContent  = rate.toFixed(1) + '%';
-  document.getElementById('lbl-down').textContent  = downPayment.toLocaleString() + '万円';
-  document.getElementById('lbl-rent').textContent  = rent.toFixed(1) + '万円';
+  document.getElementById('lbl-price').textContent   = propPrice.toLocaleString() + '万円';
+  document.getElementById('lbl-rate').textContent    = rate.toFixed(1) + '%';
+  document.getElementById('lbl-down').textContent    = downPayment.toLocaleString() + '万円';
+  document.getElementById('lbl-rent').textContent    = rent.toFixed(1) + '万円';
   document.getElementById('lbl-saleyear').textContent = saleYear + '年後';
   document.getElementById('lbl-saleratio').textContent = Math.round(saleRatio * 100) + '%';
 
   const r = simulate(propPrice, downPayment, rate, rent, saleYear, saleRatio);
 
-  // Cards
   document.getElementById('card-monthly').textContent = fmtMan(r.mPmt);
   const totalMonthly = Math.round(r.monthlyBuyTotal * 10) / 10;
   document.getElementById('card-buytotal').textContent = totalMonthly.toFixed(1) + '万/月';
+
   const beEl = document.getElementById('card-breakeven');
   if (r.breakEven) {
     beEl.textContent = r.breakEven + '年目';
@@ -584,43 +628,34 @@ function update() {
   diffEl.textContent = (r.diffAtSale >= 0 ? '+' : '') + fmtMan(r.diffAtSale);
   diffEl.className = 'card-val ' + (r.diffAtSale > 0 ? 'good' : r.diffAtSale < -200 ? 'bad' : 'warn');
 
-  // Banner
   const banner = document.getElementById('banner');
   const bannerText = document.getElementById('banner-text');
   if (r.breakEven) {
     banner.className = 'breakeven-banner ' + (r.breakEven <= 20 ? 'good' : r.breakEven <= 28 ? 'warn' : 'bad');
-    const icon = r.breakEven <= 20 ? '✅' : r.breakEven <= 28 ? '⚠️' : '🔴';
-    document.querySelector('#banner .banner-icon').textContent = icon;
-    bannerText.textContent = `購入 ${r.breakEven} 年目に損益分岐点に到達。${saleYear}年後の売却時点では賃貸より${Math.abs(r.diffAtSale).toLocaleString()}万円${r.diffAtSale >= 0 ? '安く' : '高く'}なる見込み。`;
+    document.querySelector('#banner .banner-icon').textContent = r.breakEven <= 20 ? '✅' : r.breakEven <= 28 ? '⚠️' : '🔴';
+    bannerText.textContent = `購入 ${r.breakEven} 年目に損益分岐点に到達。${saleYear}年後の売却時点では賃貸より${Math.abs(r.diffAtSale).toLocaleString()}万円${r.diffAtSale >= 0 ? '安く' : '高く'}なる試算。`;
   } else {
     banner.className = 'breakeven-banner bad';
     document.querySelector('#banner .banner-icon').textContent = '🔴';
     const diffText = r.diffAtSale >= 0
-      ? `売却時点では賃貸より${r.diffAtSale.toLocaleString()}万円安い。`
-      : `${saleYear}年後時点では賃貸の方が${Math.abs(r.diffAtSale).toLocaleString()}万円安い。`;
-    bannerText.textContent = `35年以内に損益分岐点に達しない条件です。${diffText}`;
+      ? `売却時点では賃貸より${r.diffAtSale.toLocaleString()}万円安い試算。`
+      : `${saleYear}年後時点では賃貸の方が${Math.abs(r.diffAtSale).toLocaleString()}万円安い試算。`;
+    bannerText.textContent = `この条件では35年以内に損益分岐点に達しません。${diffText}`;
   }
 
-  // Chart
   myChart.data.datasets[0].data = r.rentalArr;
   myChart.data.datasets[1].data = r.buyArr;
   myChart.data.datasets[2].data = r.buySaleArr;
-
-  // Mark sale year point
   const saleIdx = Math.min(saleYear, SIM_YEARS) - 1;
-  const ptRadii0 = Array(SIM_YEARS).fill(0);
-  const ptRadii2 = Array(SIM_YEARS).fill(0);
-  ptRadii0[saleIdx] = 6;
-  ptRadii2[saleIdx] = 6;
+  const ptRadii0 = Array(SIM_YEARS).fill(0); ptRadii0[saleIdx] = 6;
+  const ptRadii2 = Array(SIM_YEARS).fill(0); ptRadii2[saleIdx] = 6;
   myChart.data.datasets[1].pointRadius = ptRadii0;
   myChart.data.datasets[2].pointRadius = ptRadii2;
-
   myChart.update('none');
 
-  // Table
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
-  const keyYears = new Set([5,8,10,15,20,25,30,35,saleYear]);
+  const keyYears = new Set([5, 8, 10, 15, 20, 25, 30, 35, saleYear]);
   for (let y = 1; y <= SIM_YEARS; y++) {
     if (!keyYears.has(y)) continue;
     const idx = y - 1;
@@ -640,10 +675,43 @@ function update() {
 }
 
 // ─────────────────────────────────────────
+// Presets
+// ─────────────────────────────────────────
+function applyPreset(price, rate, down, rent) {
+  document.getElementById('sl-price').value    = price;
+  document.getElementById('sl-rate').value     = rate;
+  document.getElementById('sl-down').value     = down;
+  document.getElementById('sl-rent').value     = Math.round(rent * 10);
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  update();
+}
+
+// ─────────────────────────────────────────
+// Toggle helpers
+// ─────────────────────────────────────────
+function toggleAssumptions() {
+  const body = document.getElementById('assump-body');
+  const icon = document.getElementById('assump-icon');
+  body.classList.toggle('open');
+  icon.textContent = body.classList.contains('open') ? '▲' : '▼';
+}
+
+function toggleTable() {
+  const body = document.getElementById('detail-body');
+  const icon = document.getElementById('table-toggle-icon');
+  body.classList.toggle('open');
+  icon.textContent = body.classList.contains('open') ? '▲ 閉じる' : '▼ 展開して確認';
+}
+
+// ─────────────────────────────────────────
 // Wire up sliders
 // ─────────────────────────────────────────
 ['sl-price','sl-rate','sl-down','sl-rent','sl-saleyear','sl-saleratio'].forEach(id => {
-  document.getElementById(id).addEventListener('input', update);
+  document.getElementById(id).addEventListener('input', () => {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    update();
+  });
 });
 
 update();

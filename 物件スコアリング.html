@@ -23,303 +23,282 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Helvetica Neue','Hiragino Sans','Meiryo',sans-serif;
-  padding: 16px 14px 64px;
+  padding: 0 14px 64px;
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
 }
 .container { max-width: 900px; margin: 0 auto; }
 
-/* ── Header ── */
-.header { margin-bottom: 16px; }
-.header h1 { font-size: 1.25em; color: var(--blue); }
-.header p  { font-size: 0.78em; color: var(--muted); margin-top: 2px; }
+/* ── Top nav ── */
+.topnav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.topnav-back { color: var(--muted); text-decoration: none; font-size: 0.80em; transition: color 0.15s; }
+.topnav-back:hover { color: var(--blue); }
+.topnav-step { font-size: 0.68em; color: var(--muted); letter-spacing: .08em; }
 
-/* ── Top bar: 物件名 + 足切り ── */
-.top-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+/* ── Header ── */
+.header { margin-bottom: 14px; }
+.header h1 { font-size: 1.25em; color: var(--blue); }
+.header p  { font-size: 0.78em; color: var(--muted); margin-top: 3px; }
+
+/* ── Scoring basis (collapsible) ── */
+.basis-wrap {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.basis-toggle {
+  width: 100%; background: none; border: none;
+  color: var(--muted); font-size: 0.76em;
+  padding: 10px 14px; text-align: left; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: color 0.15s;
+}
+.basis-toggle:hover { color: var(--text); }
+.basis-body {
+  display: none;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75em;
+  color: var(--muted);
+  line-height: 1.85;
+}
+.basis-body.open { display: block; }
+.basis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.basis-item { background: var(--surf2); border-radius: 8px; padding: 10px 12px; }
+.basis-item-head {
+  font-size: 0.85em; font-weight: 700; color: var(--text);
+  margin-bottom: 5px; display: flex; justify-content: space-between;
+}
+.basis-item-weight {
+  font-size: 0.75em; color: var(--blue); font-weight: 700;
+  background: rgba(126,184,247,0.1); padding: 1px 6px; border-radius: 4px;
+}
+.basis-item ul { list-style: none; font-size: 0.90em; }
+.basis-item li { padding: 2px 0; display: flex; justify-content: space-between; gap: 10px; }
+.basis-item li span { color: var(--text); font-weight: 600; }
+.basis-note { font-size: 0.88em; color: var(--muted); }
+.basis-note strong { color: #aaa; }
+
+/* ── Top bar ── */
+.top-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;
 }
 .name-input {
-  flex: 1;
-  min-width: 120px;
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-size: 0.88em;
-  padding: 6px 10px;
-  outline: none;
-  transition: border-color .15s;
+  flex: 1; min-width: 120px;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 0.88em;
+  padding: 6px 10px; outline: none; transition: border-color .15s;
 }
 .name-input::placeholder { color: var(--muted); }
 .name-input:focus { border-color: var(--blue); }
 
-/* 足切りトグル群 */
-.ng-checks {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
+/* 注意事項トグル群 */
+.ng-checks { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
 .ng-btn {
-  font-size: 0.73em;
-  padding: 5px 10px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--surf2);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .12s;
-  white-space: nowrap;
-  user-select: none;
+  font-size: 0.73em; padding: 5px 10px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surf2); color: var(--muted);
+  cursor: pointer; transition: all .12s; white-space: nowrap; user-select: none;
 }
 .ng-btn.ok { background: #152d1e; border-color: #2d6b45; color: var(--green); font-weight: 700; }
-.ng-btn.ng { background: #2d1515; border-color: #6b2020; color: var(--red);   font-weight: 700; }
+.ng-btn.ng { background: #2d2510; border-color: #6b5520; color: var(--yellow); font-weight: 700; }
 
-/* ── Main 2-col layout ── */
+/* ── Main layout ── */
 .main-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: start;
-  margin-bottom: 12px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; align-items: start; margin-bottom: 12px;
 }
 @media (max-width: 640px) { .main-grid { grid-template-columns: 1fr; } }
 
-/* ── 4 big input cards ── */
-.inputs-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
+/* ── Input cards ── */
+.inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .input-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 14px 12px;
-  transition: border-color .15s;
-  cursor: text;
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 12px; padding: 14px 14px 12px;
+  transition: border-color .15s; cursor: text;
 }
-.input-card:focus-within {
-  border-color: var(--blue);
-}
+.input-card:focus-within { border-color: var(--blue); }
 .ic-label {
-  font-size: 0.72em;
-  color: var(--muted);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-size: 0.72em; color: var(--muted); margin-bottom: 6px;
+  display: flex; align-items: center; justify-content: space-between; gap: 4px;
 }
-.ic-row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
+.ic-label-hint { font-size: 0.88em; color: var(--border); cursor: help; }
+.ic-row { display: flex; align-items: baseline; gap: 6px; }
 .ic-input {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid var(--border);
-  color: var(--text);
-  font-size: 1.9em;
-  font-weight: 700;
-  padding: 2px 0 4px;
-  outline: none;
-  width: 100%;
-  transition: border-color .15s;
+  flex: 1; min-width: 0; background: transparent; border: none;
+  border-bottom: 2px solid var(--border); color: var(--text);
+  font-size: 1.9em; font-weight: 700; padding: 2px 0 4px;
+  outline: none; width: 100%; transition: border-color .15s;
   -moz-appearance: textfield;
 }
-.ic-input::-webkit-outer-spin-button,
-.ic-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.ic-input::-webkit-outer-spin-button, .ic-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .ic-input:focus { border-bottom-color: var(--blue); }
 .ic-input::placeholder { color: var(--border); font-size: 0.7em; }
-.ic-unit {
-  font-size: 0.82em;
-  color: var(--muted);
-  white-space: nowrap;
-  padding-bottom: 4px;
-}
-/* Score preview badge on each card */
+.ic-unit { font-size: 0.82em; color: var(--muted); white-space: nowrap; padding-bottom: 4px; }
 .ic-badge {
-  display: inline-block;
-  font-size: 0.68em;
-  padding: 2px 7px;
-  border-radius: 10px;
-  background: var(--surf2);
-  color: var(--muted);
-  margin-top: 7px;
-  transition: all .2s;
+  display: inline-block; font-size: 0.68em; padding: 2px 7px;
+  border-radius: 10px; background: var(--surf2); color: var(--muted);
+  margin-top: 7px; transition: all .2s;
 }
 
-/* Save button */
 .btn-save {
-  width: 100%;
-  padding: 13px;
-  border-radius: 10px;
-  border: none;
-  background: var(--blue);
-  color: #0a0f1a;
-  font-weight: 700;
-  font-size: 0.92em;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: opacity .15s;
-  letter-spacing: .02em;
+  width: 100%; padding: 13px; border-radius: 10px; border: none;
+  background: var(--blue); color: #0a0f1a; font-weight: 700;
+  font-size: 0.92em; cursor: pointer; margin-top: 10px;
+  transition: opacity .15s; letter-spacing: .02em;
 }
 .btn-save:hover { opacity: .85; }
 
 /* ── Score panel ── */
-.score-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 16px;
-}
+.score-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 16px; }
 .sec-label {
-  font-size: 0.68em;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
+  font-size: 0.68em; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .07em; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
 }
 
-/* Score ring */
-.score-top {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+/* Advisory panel (warning, not elimination) */
+.advisory-panel {
+  background: #2d2510; border: 1px solid #6b5520;
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
 }
+.advisory-title { font-size: 0.9em; font-weight: 700; color: var(--yellow); margin-bottom: 6px; }
+.advisory-list  { font-size: 0.80em; color: #ffe099; line-height: 2; }
+
+/* Score ring */
+.score-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
 .ring-wrap { position: relative; width: 90px; height: 90px; flex-shrink: 0; }
 .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.ring-center {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-}
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .ring-score { font-size: 1.65em; font-weight: 700; line-height: 1; }
 .ring-max   { font-size: 0.60em; color: var(--muted); }
 .tier-wrap  { flex: 1; min-width: 0; }
-.tier-badge {
-  display: inline-block;
-  font-size: 0.76em;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: var(--surf2);
-  color: var(--muted);
-  margin-bottom: 5px;
-}
+.tier-badge { display: inline-block; font-size: 0.76em; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--surf2); color: var(--muted); margin-bottom: 5px; }
 .tier-comment { font-size: 0.76em; color: var(--muted); line-height: 1.5; }
-
-/* NG panel */
-.ng-panel {
-  background: #2d1515;
-  border: 1px solid #6b2020;
-  border-radius: 8px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
-}
-.ng-title { font-size: 0.9em; font-weight: 700; color: var(--red); margin-bottom: 6px; }
-.ng-list  { font-size: 0.80em; color: #ffaaaa; line-height: 2; }
 
 /* Category bars */
 .cat-bars { margin-bottom: 14px; }
 .cat-row  { margin-bottom: 8px; }
-.cat-head {
-  display: flex; justify-content: space-between;
-  font-size: 0.70em; color: var(--muted); margin-bottom: 3px;
-}
-.cat-pts { color: var(--text); font-weight: 600; }
-.bar-bg  { height: 5px; background: var(--surf2); border-radius: 3px; overflow: hidden; }
+.cat-head { display: flex; justify-content: space-between; font-size: 0.70em; color: var(--muted); margin-bottom: 3px; }
+.cat-pts  { color: var(--text); font-weight: 600; }
+.bar-bg   { height: 5px; background: var(--surf2); border-radius: 3px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
 
 /* Weaknesses */
 .weak-title { font-size: 0.70em; color: var(--muted); margin-bottom: 6px; }
 .weak-list  { display: flex; flex-direction: column; gap: 5px; }
 .weak-item {
-  font-size: 0.76em;
-  padding: 5px 10px;
-  border-radius: 6px;
-  background: var(--surf2);
-  border-left: 3px solid var(--yellow);
-  color: #e0d080;
+  font-size: 0.76em; padding: 5px 10px; border-radius: 6px;
+  background: var(--surf2); border-left: 3px solid var(--yellow); color: #e0d080;
 }
 .weak-item.ok { border-left-color: var(--green); color: #80d090; }
 
 /* ── Comparison ── */
-.comparison-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px 16px;
-}
-.comp-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 10px;
-}
+.comparison-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px 16px; }
+.comp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .comp-title { font-size: 0.82em; color: var(--muted); }
-.btn-clear {
-  font-size: 0.70em; padding: 3px 9px;
-  border-radius: 5px; border: 1px solid var(--border);
-  background: transparent; color: var(--muted); cursor: pointer;
-}
+.btn-clear { font-size: 0.70em; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; }
 .btn-clear:hover { color: var(--red); border-color: var(--red); }
 .empty-msg { text-align: center; font-size: 0.80em; color: var(--muted); padding: 16px; }
-
-.comp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
-}
-.comp-card {
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 9px; padding: 11px; position: relative;
-  cursor: pointer; transition: border-color .15s;
-}
+.comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.comp-card { background: var(--surf2); border: 1px solid var(--border); border-radius: 9px; padding: 11px; position: relative; cursor: pointer; transition: border-color .15s; }
 .comp-card:hover { border-color: var(--blue); }
 .comp-card.best-score { border-color: var(--green); }
-.comp-del {
-  position: absolute; top: 6px; right: 7px;
-  background: none; border: none;
-  color: var(--muted); font-size: 0.80em; cursor: pointer; padding: 2px;
-}
+.comp-del { position: absolute; top: 6px; right: 7px; background: none; border: none; color: var(--muted); font-size: 0.80em; cursor: pointer; padding: 2px; }
 .comp-del:hover { color: var(--red); }
-.comp-name {
-  font-size: 0.78em; font-weight: 600; color: var(--text);
-  margin-bottom: 5px; padding-right: 14px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.comp-name { font-size: 0.78em; font-weight: 600; color: var(--text); margin-bottom: 5px; padding-right: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .comp-score { font-size: 1.55em; font-weight: 700; line-height: 1; margin-bottom: 3px; }
 .comp-tier  { font-size: 0.65em; margin-bottom: 7px; }
 .comp-rows  { font-size: 0.68em; color: var(--muted); line-height: 1.85; }
 .comp-rows span { display: flex; justify-content: space-between; }
 .comp-rows .val { color: var(--text); }
 .comp-rows .val.best { color: var(--green); font-weight: 700; }
-.comp-ng { font-size: 0.70em; color: var(--red); font-weight: 700; margin-top: 3px; }
+.comp-warn { font-size: 0.70em; color: var(--yellow); font-weight: 700; margin-top: 3px; }
 </style>
 </head>
 <body>
 <div class="container">
 
+  <!-- Nav -->
+  <div class="topnav">
+    <a href="index.html" class="topnav-back">← ツール一覧</a>
+    <span class="topnav-step">STEP 3 / 4</span>
+  </div>
+
   <!-- Header -->
   <div class="header">
     <h1>🏠 物件スコアリング</h1>
-    <p>SUUMO を見ながらその場で採点・比較する</p>
+    <p>物件情報を入力してその場で採点・比較 — 内見前の絞り込みに活用できます</p>
   </div>
 
-  <!-- Top bar: 物件名 + 足切りトグル -->
+  <!-- Scoring basis (collapsible) -->
+  <div class="basis-wrap">
+    <button class="basis-toggle" onclick="toggleBasis()">
+      <span>採点基準について（配点の考え方）</span>
+      <span id="basis-icon">▼ 確認する</span>
+    </button>
+    <div class="basis-body" id="basis-body">
+      <div class="basis-grid">
+        <div class="basis-item">
+          <div class="basis-item-head">🚶 最寄駅 徒歩 <span class="basis-item-weight">35点</span></div>
+          <ul>
+            <li>3分以内<span>35点</span></li>
+            <li>6分以内<span>25点</span></li>
+            <li>10分以内<span>10点</span></li>
+            <li>11分以上<span>0点</span></li>
+          </ul>
+        </div>
+        <div class="basis-item">
+          <div class="basis-item-head">🚄 都心アクセス <span class="basis-item-weight">25点</span></div>
+          <ul>
+            <li>20分以内<span>25点</span></li>
+            <li>30分以内<span>15点</span></li>
+            <li>40分以内<span>5点</span></li>
+            <li>41分以上<span>0点</span></li>
+          </ul>
+        </div>
+        <div class="basis-item">
+          <div class="basis-item-head">💰 価格 <span class="basis-item-weight">25点</span></div>
+          <ul>
+            <li>3,500万以下<span>25点</span></li>
+            <li>4,000万以下<span>18点</span></li>
+            <li>4,500万以下<span>10点</span></li>
+            <li>5,000万以下<span>5点</span></li>
+          </ul>
+        </div>
+        <div class="basis-item">
+          <div class="basis-item-head">🏗 築年数 <span class="basis-item-weight">15点</span></div>
+          <ul>
+            <li>10年以内<span>15点</span></li>
+            <li>20年以内<span>10点</span></li>
+            <li>30年以内<span>5点</span></li>
+            <li>31年以上<span>0点</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="basis-note">
+        <strong>重み付けの考え方：</strong>
+        駅徒歩は日常の利便性と資産価値に最も影響するため最高配点（35点）。
+        価格と都心アクセスは同等の重要度として25点ずつ。
+        築年数は修繕費・耐震性に関わるが他の条件で補える側面もあるため補助的配点（15点）。
+        注意事項（エレベーター・エリア・階数）は採点には影響せず参考情報として表示します。
+      </div>
+    </div>
+  </div>
+
+  <!-- Top bar -->
   <div class="top-bar">
     <input class="name-input" type="text" id="f-name" placeholder="物件名（任意）">
     <div class="ng-checks">
@@ -329,26 +308,30 @@ body {
     </div>
   </div>
 
-  <!-- Main 2-col: inputs + score -->
+  <!-- Main: inputs + score -->
   <div class="main-grid">
 
-    <!-- LEFT: 4 big inputs -->
+    <!-- Inputs -->
     <div>
       <div class="inputs-grid">
 
-        <!-- 駅徒歩 -->
         <div class="input-card" onclick="this.querySelector('input').focus()">
-          <div class="ic-label">🚶 駅 徒歩</div>
+          <div class="ic-label">
+            <span>🚶 最寄駅 徒歩</span>
+            <span class="ic-label-hint" title="3分以内で満点35点">●</span>
+          </div>
           <div class="ic-row">
-            <input class="ic-input" type="number" id="f-walk"  min="1" max="60"  inputmode="numeric" placeholder="—" oninput="recalc()">
+            <input class="ic-input" type="number" id="f-walk" min="1" max="60" inputmode="numeric" placeholder="—" oninput="recalc()">
             <span class="ic-unit">分</span>
           </div>
           <div class="ic-badge" id="badge-walk">最大 35点</div>
         </div>
 
-        <!-- 品川まで -->
         <div class="input-card" onclick="this.querySelector('input').focus()">
-          <div class="ic-label">🚄 品川まで</div>
+          <div class="ic-label">
+            <span>🚄 都心アクセス</span>
+            <span class="ic-label-hint" title="品川・渋谷など主要ターミナル駅まで。20分以内で満点25点">●</span>
+          </div>
           <div class="ic-row">
             <input class="ic-input" type="number" id="f-shina" min="1" max="120" inputmode="numeric" placeholder="—" oninput="recalc()">
             <span class="ic-unit">分</span>
@@ -356,9 +339,11 @@ body {
           <div class="ic-badge" id="badge-shina">最大 25点</div>
         </div>
 
-        <!-- 価格 -->
         <div class="input-card" onclick="this.querySelector('input').focus()">
-          <div class="ic-label">💰 価格</div>
+          <div class="ic-label">
+            <span>💰 価格</span>
+            <span class="ic-label-hint" title="3,500万以下で満点25点">●</span>
+          </div>
           <div class="ic-row">
             <input class="ic-input" type="number" id="f-price" min="100" max="20000" step="50" inputmode="numeric" placeholder="—" oninput="recalc()">
             <span class="ic-unit">万</span>
@@ -366,29 +351,30 @@ body {
           <div class="ic-badge" id="badge-price">最大 25点</div>
         </div>
 
-        <!-- 築年数 -->
         <div class="input-card" onclick="this.querySelector('input').focus()">
-          <div class="ic-label">🏗 築年数</div>
+          <div class="ic-label">
+            <span>🏗 築年数</span>
+            <span class="ic-label-hint" title="10年以内で満点15点">●</span>
+          </div>
           <div class="ic-row">
-            <input class="ic-input" type="number" id="f-age"   min="0" max="60"  inputmode="numeric" placeholder="—" oninput="recalc()">
+            <input class="ic-input" type="number" id="f-age" min="0" max="60" inputmode="numeric" placeholder="—" oninput="recalc()">
             <span class="ic-unit">年</span>
           </div>
           <div class="ic-badge" id="badge-age">最大 15点</div>
         </div>
 
-      </div><!-- /inputs-grid -->
-
+      </div>
       <button class="btn-save" onclick="saveProperty()">比較リストに保存 →</button>
     </div>
 
-    <!-- RIGHT: Score display -->
+    <!-- Score panel -->
     <div class="score-panel">
       <div class="sec-label">採点結果</div>
 
-      <!-- NG panel -->
-      <div class="ng-panel" id="ng-panel" style="display:none">
-        <div class="ng-title">⛔ 足切り — 検討対象外</div>
-        <div class="ng-list" id="ng-reasons"></div>
+      <!-- Advisory panel (注意事項 — 足切りではなく参考表示) -->
+      <div class="advisory-panel" id="advisory-panel" style="display:none">
+        <div class="advisory-title">⚠ 要確認事項</div>
+        <div class="advisory-list" id="advisory-reasons"></div>
       </div>
 
       <!-- Ring -->
@@ -415,11 +401,11 @@ body {
       <!-- Category bars -->
       <div class="cat-bars">
         <div class="cat-row">
-          <div class="cat-head"><span>🚶 駅徒歩</span><span class="cat-pts"><span id="s-walk">—</span> / 35</span></div>
-          <div class="bar-bg"><div class="bar-fill" id="b-walk"  style="width:0%;background:var(--blue)"></div></div>
+          <div class="cat-head"><span>🚶 最寄駅徒歩</span><span class="cat-pts"><span id="s-walk">—</span> / 35</span></div>
+          <div class="bar-bg"><div class="bar-fill" id="b-walk" style="width:0%;background:var(--blue)"></div></div>
         </div>
         <div class="cat-row">
-          <div class="cat-head"><span>🚄 品川まで</span><span class="cat-pts"><span id="s-shina">—</span> / 25</span></div>
+          <div class="cat-head"><span>🚄 都心アクセス</span><span class="cat-pts"><span id="s-shina">—</span> / 25</span></div>
           <div class="bar-bg"><div class="bar-fill" id="b-shina" style="width:0%;background:var(--purple)"></div></div>
         </div>
         <div class="cat-row">
@@ -428,18 +414,17 @@ body {
         </div>
         <div class="cat-row">
           <div class="cat-head"><span>🏗 築年数</span><span class="cat-pts"><span id="s-age">—</span> / 15</span></div>
-          <div class="bar-bg"><div class="bar-fill" id="b-age"   style="width:0%;background:var(--green)"></div></div>
+          <div class="bar-bg"><div class="bar-fill" id="b-age" style="width:0%;background:var(--green)"></div></div>
         </div>
       </div>
 
-      <!-- Weaknesses -->
-      <div class="weak-title">💡 弱点・改善ポイント</div>
+      <div class="weak-title">💡 改善余地・確認ポイント</div>
       <div class="weak-list" id="weak-list">
-        <div class="weak-item ok">4項目を入力すると弱点分析が表示されます</div>
+        <div class="weak-item ok">4項目を入力すると分析が表示されます</div>
       </div>
     </div>
 
-  </div><!-- /main-grid -->
+  </div>
 
   <!-- Comparison -->
   <div class="comparison-panel">
@@ -452,7 +437,7 @@ body {
     </div>
   </div>
 
-</div><!-- /container -->
+</div>
 <script>
 // ─────────────────────────────
 // State
@@ -460,16 +445,14 @@ body {
 const state = { elevator: 'yes', area: 'yes', floors: 'yes' };
 
 // ─────────────────────────────
-// Toggle 足切りボタン
+// Toggle buttons
 // ─────────────────────────────
 function toggleNG(btn) {
   const key = btn.dataset.key;
   const isOk = btn.classList.contains('ok');
-  // flip
   const newVal = isOk ? 'no' : 'yes';
   state[key] = newVal;
   btn.className = 'ng-btn ' + (newVal === 'yes' ? 'ok' : 'ng');
-  // label
   const labels = {
     elevator: newVal === 'yes' ? '🛗 EV あり'  : '🛗 EV なし',
     area:     newVal === 'yes' ? '📍 横浜市内' : '📍 横浜市外',
@@ -480,7 +463,7 @@ function toggleNG(btn) {
 }
 
 // ─────────────────────────────
-// Scoring
+// Scoring (unchanged)
 // ─────────────────────────────
 function scoreWalk(v)  {
   if (v === null) return null;
@@ -517,13 +500,12 @@ function getVal(id) {
   return isNaN(v) ? null : v;
 }
 
-function tierInfo(score, eliminated) {
-  if (eliminated) return { cls: 'c-red',    emoji: '⛔', short: '足切り対象外',       comment: '足切り条件に該当するため検討対象外です。' };
-  if (score === null) return { cls: '',      emoji: '',   short: '入力待ち',           comment: '4項目を入力すると採点されます' };
-  if (score >= 80)    return { cls: 'c-gold',  emoji: '🏆', short: '超優良・即検討レベル', comment: '主要条件をほぼ満たしています。すぐに内見予約を検討しましょう。' };
-  if (score >= 60)    return { cls: 'c-blue',  emoji: '✅', short: '有力候補・詳細確認推奨', comment: '総合的に良好です。弱点を確認したうえで内見に進んでください。' };
-  if (score >= 40)    return { cls: 'c-yellow',emoji: '⚠️', short: '条件次第・要交渉',   comment: '一部の条件が劣ります。価格交渉や妥協点を整理して再評価しましょう。' };
-  return                     { cls: 'c-red',   emoji: '❌', short: '優先度低',           comment: '複数の条件が大きく劣っています。他の物件を優先することを推奨します。' };
+function tierInfo(score) {
+  if (score === null) return { emoji: '',    short: '入力待ち',              comment: '4項目を入力すると採点されます' };
+  if (score >= 80)    return { emoji: '🏆', short: '超優良・即検討レベル',   comment: '主要条件をほぼ満たしています。すぐに内見予約を検討しましょう。' };
+  if (score >= 60)    return { emoji: '✅', short: '有力候補・詳細確認推奨', comment: '総合的に良好です。弱点を確認したうえで内見に進んでください。' };
+  if (score >= 40)    return { emoji: '⚠️', short: '条件次第・要交渉',      comment: '一部の条件が劣ります。価格交渉や妥協点を整理して再評価しましょう。' };
+  return                     { emoji: '❌', short: '優先度低',               comment: '複数の条件が大きく劣っています。他の物件を優先することを検討してください。' };
 }
 
 function scoreColor(score) {
@@ -543,22 +525,24 @@ function recalc() {
   const price = getVal('f-price');
   const age   = getVal('f-age');
 
-  const ngReasons = [];
-  if (state.elevator === 'no') ngReasons.push('エレベーターなし');
-  if (state.area     === 'no') ngReasons.push('横浜市外');
-  if (state.floors   === 'no') ngReasons.push('5階建て未満');
-  const eliminated = ngReasons.length > 0;
+  // Advisory warnings (not elimination — score is still calculated)
+  const advisoryItems = [];
+  if (state.elevator === 'no') advisoryItems.push('エレベーターなし — 上層階の場合は生活利便性を要確認');
+  if (state.area     === 'no') advisoryItems.push('横浜市外 — エリア条件に注意');
+  if (state.floors   === 'no') advisoryItems.push('5階建て未満 — 眺望・セキュリティを要確認');
+  const hasAdvisory = advisoryItems.length > 0;
 
   const sw = scoreWalk(walk);
   const ss = scoreShina(shina);
   const sp = scorePrice(price);
   const sa = scoreAge(age);
   const hasAll = [sw, ss, sp, sa].every(v => v !== null);
-  const total  = (!eliminated && hasAll) ? sw + ss + sp + sa : null;
-  const tier   = tierInfo(total, eliminated);
+  // Score is always calculated if inputs are complete (advisory doesn't block scoring)
+  const total = hasAll ? sw + ss + sp + sa : null;
+  const tier  = tierInfo(total);
 
-  // ── Input card badges ──
-  function setBadge(id, pts, max, label) {
+  // ── Badges ──
+  function setBadge(id, pts, max) {
     const el = document.getElementById(id);
     if (pts === null) { el.textContent = `最大 ${max}点`; el.style.cssText = ''; return; }
     el.textContent = `${pts} / ${max}点`;
@@ -567,30 +551,25 @@ function recalc() {
     el.style.color = pct === 1 ? 'var(--green)' : pct >= 0.5 ? 'var(--blue)' : pct > 0 ? 'var(--yellow)' : 'var(--red)';
     el.style.border = '1px solid ' + (pct === 1 ? '#2d6b45' : pct >= 0.5 ? '#2d4a6b' : pct > 0 ? '#5a4a10' : '#6b2020');
   }
-  setBadge('badge-walk',  sw, 35, '駅徒歩');
-  setBadge('badge-shina', ss, 25, '品川まで');
-  setBadge('badge-price', sp, 25, '価格');
-  setBadge('badge-age',   sa, 15, '築年数');
+  setBadge('badge-walk',  sw, 35);
+  setBadge('badge-shina', ss, 25);
+  setBadge('badge-price', sp, 25);
+  setBadge('badge-age',   sa, 15);
 
-  // ── NG panel ──
-  const ngPanel = document.getElementById('ng-panel');
-  if (eliminated) {
-    ngPanel.style.display = 'block';
-    document.getElementById('ng-reasons').innerHTML = ngReasons.map(r => `✘ ${r}`).join('<br>');
+  // ── Advisory panel ──
+  const advPanel = document.getElementById('advisory-panel');
+  if (hasAdvisory) {
+    advPanel.style.display = 'block';
+    document.getElementById('advisory-reasons').innerHTML = advisoryItems.map(r => `⚠ ${r}`).join('<br>');
   } else {
-    ngPanel.style.display = 'none';
+    advPanel.style.display = 'none';
   }
 
   // ── Ring ──
   const CIRC = 251.2;
   const ringNum = document.getElementById('ring-num');
   const ringArc = document.getElementById('ring-arc');
-  if (eliminated) {
-    ringNum.textContent = 'NG';
-    ringNum.style.color = 'var(--red)';
-    ringArc.setAttribute('stroke', 'var(--red)');
-    ringArc.style.strokeDashoffset = CIRC * 0.8;
-  } else if (total !== null) {
+  if (total !== null) {
     ringNum.textContent = total;
     ringNum.style.color = scoreColor(total);
     ringArc.setAttribute('stroke', scoreColor(total));
@@ -606,12 +585,9 @@ function recalc() {
   const badge = document.getElementById('tier-badge');
   badge.textContent = tier.emoji ? `${tier.emoji} ${tier.short}` : tier.short;
   badge.style.cssText = '';
-  if (!eliminated && total !== null) {
+  if (total !== null) {
     badge.style.background = total >= 80 ? '#1a3d28' : total >= 60 ? '#162336' : total >= 40 ? '#2d2510' : '#2d1515';
     badge.style.color      = scoreColor(total);
-  } else if (eliminated) {
-    badge.style.background = '#2d1515';
-    badge.style.color      = 'var(--red)';
   } else {
     badge.style.background = 'var(--surf2)';
     badge.style.color      = 'var(--muted)';
@@ -638,21 +614,17 @@ function recalc() {
     weakList.appendChild(d);
   };
 
-  if (eliminated) {
-    ngReasons.forEach(r => add(`⛔ ${r} — 足切り対象`, false));
-    return;
-  }
-  if (!hasAll) { add('4項目を入力すると弱点分析が表示されます', true); return; }
+  if (!hasAll) { add('4項目を入力すると改善ポイントが表示されます', true); return; }
 
   const items = [];
   if (sw < 35) items.push({ pts: 35 - sw, text: `▼ 駅徒歩 ${walk}分（3分以内なら +${35-sw}点）` });
-  else add(`▲ 駅徒歩 ${walk}分以内 — 満点 🎯`, true);
+  else add(`▲ 駅徒歩 ${walk}分 — 満点 🎯`, true);
 
-  if (ss < 25) items.push({ pts: 25 - ss, text: `▼ 品川まで ${shina}分（20分以内なら +${25-ss}点）` });
-  else add(`▲ 品川まで ${shina}分 — 満点 🎯`, true);
+  if (ss < 25) items.push({ pts: 25 - ss, text: `▼ 都心アクセス ${shina}分（20分以内なら +${25-ss}点）` });
+  else add(`▲ 都心アクセス ${shina}分 — 満点 🎯`, true);
 
   if (sp < 25) items.push({ pts: 25 - sp, text: `▼ ${price.toLocaleString()}万円（3,500万以下なら +${25-sp}点）` });
-  else add(`▲ ${price.toLocaleString()}万円 3,500万以下 — 満点 🎯`, true);
+  else add(`▲ ${price.toLocaleString()}万円 — 満点 🎯`, true);
 
   if (sa < 15) items.push({ pts: 15 - sa, text: `▼ 築${age}年（10年以内なら +${15-sa}点）` });
   else add(`▲ 築${age}年以内 — 満点 🎯`, true);
@@ -660,7 +632,17 @@ function recalc() {
   items.sort((a, b) => b.pts - a.pts).forEach(i => add(i.text, false));
 
   const lost = 100 - total;
-  add(lost === 0 ? '🏆 全カテゴリ満点！' : `合計 ${lost}点の取りこぼし`, lost === 0);
+  add(lost === 0 ? '🏆 全カテゴリ満点！' : `合計 ${lost}点の取りこぼしがあります`, lost === 0);
+}
+
+// ─────────────────────────────
+// Basis toggle
+// ─────────────────────────────
+function toggleBasis() {
+  const body = document.getElementById('basis-body');
+  const icon = document.getElementById('basis-icon');
+  body.classList.toggle('open');
+  icon.textContent = body.classList.contains('open') ? '▲ 閉じる' : '▼ 確認する';
 }
 
 // ─────────────────────────────
@@ -671,18 +653,21 @@ function buildData() {
   const shina = getVal('f-shina');
   const price = getVal('f-price');
   const age   = getVal('f-age');
-  const ngR = [];
-  if (state.elevator === 'no') ngR.push('EV なし');
-  if (state.area     === 'no') ngR.push('横浜市外');
-  if (state.floors   === 'no') ngR.push('5F 未満');
-  const eliminated = ngR.length > 0;
+  const advisoryR = [];
+  if (state.elevator === 'no') advisoryR.push('EV なし');
+  if (state.area     === 'no') advisoryR.push('横浜市外');
+  if (state.floors   === 'no') advisoryR.push('5F 未満');
   const sw = scoreWalk(walk), ss = scoreShina(shina), sp = scorePrice(price), sa = scoreAge(age);
   const hasAll = [sw,ss,sp,sa].every(v => v !== null);
-  const total = (!eliminated && hasAll) ? sw+ss+sp+sa : null;
-  return { id: Date.now(), name: document.getElementById('f-name').value || '無題物件',
+  const total = hasAll ? sw+ss+sp+sa : null;
+  return {
+    id: Date.now(),
+    name: document.getElementById('f-name').value || '無題物件',
     elevator: state.elevator, area: state.area, floors: state.floors,
-    walk, shina, price, age, sw, ss, sp, sa, total, eliminated, ngR,
-    savedAt: new Date().toLocaleDateString('ja-JP') };
+    walk, shina, price, age, sw, ss, sp, sa, total,
+    hasAdvisory: advisoryR.length > 0, advisoryR,
+    savedAt: new Date().toLocaleDateString('ja-JP')
+  };
 }
 
 function saveProperty() {
@@ -690,22 +675,22 @@ function saveProperty() {
   let list = loadList();
   list.unshift(p);
   if (list.length > 5) list = list.slice(0, 5);
-  localStorage.setItem('prop_list_v2', JSON.stringify(list));
+  localStorage.setItem('prop_list_v3', JSON.stringify(list));
   renderComp();
 }
 
 function loadList() {
-  try { return JSON.parse(localStorage.getItem('prop_list_v2') || '[]'); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('prop_list_v3') || '[]'); } catch { return []; }
 }
 
 function deleteProperty(id) {
-  localStorage.setItem('prop_list_v2', JSON.stringify(loadList().filter(p => p.id !== id)));
+  localStorage.setItem('prop_list_v3', JSON.stringify(loadList().filter(p => p.id !== id)));
   renderComp();
 }
 
 function clearAll() {
   if (confirm('比較リストをすべて削除しますか？')) {
-    localStorage.removeItem('prop_list_v2');
+    localStorage.removeItem('prop_list_v3');
     renderComp();
   }
 }
@@ -737,7 +722,7 @@ function renderComp() {
   const container = document.getElementById('comp-container');
   if (!list.length) { container.innerHTML = '<div class="empty-msg">保存した物件がここに表示されます</div>'; return; }
 
-  const validScores = list.filter(p => !p.eliminated && p.total !== null);
+  const validScores = list.filter(p => p.total !== null);
   const bestTotal = validScores.length ? Math.max(...validScores.map(p => p.total)) : null;
   const bestWalk  = Math.min(...list.filter(p => p.walk  != null).map(p => p.walk));
   const bestShina = Math.min(...list.filter(p => p.shina != null).map(p => p.shina));
@@ -749,24 +734,24 @@ function renderComp() {
 
   list.forEach(prop => {
     const c = document.createElement('div');
-    c.className = 'comp-card' + (prop.total === bestTotal && !prop.eliminated ? ' best-score' : '');
+    c.className = 'comp-card' + (prop.total === bestTotal ? ' best-score' : '');
     c.onclick = () => loadToForm(prop);
-    const sc = prop.eliminated ? 'var(--red)' : scoreColor(prop.total);
-    const tier = tierInfo(prop.total, prop.eliminated);
+    const sc = scoreColor(prop.total);
+    const tier = tierInfo(prop.total);
     const row = (lbl, val, unit, best) =>
       val != null ? `<span>${lbl}<span class="val${best?' best':''}">${typeof val==='number'&&val>=1000?val.toLocaleString():val}${unit}</span></span>` : '';
     c.innerHTML = `
       <button class="comp-del" onclick="event.stopPropagation();deleteProperty(${prop.id})">✕</button>
       <div class="comp-name" title="${prop.name}">${prop.name}</div>
-      <div class="comp-score" style="color:${sc}">${prop.eliminated?'NG':prop.total??'—'}<span style="font-size:.42em;color:var(--muted)">${prop.eliminated?'':'/100'}</span></div>
-      <div class="comp-tier"  style="color:${sc}">${prop.eliminated?'⛔ 足切り':tier.emoji+' '+(prop.total!=null?tier.short:'入力中')}</div>
+      <div class="comp-score" style="color:${sc}">${prop.total??'—'}<span style="font-size:.42em;color:var(--muted)">/100</span></div>
+      <div class="comp-tier" style="color:${sc}">${tier.emoji ? tier.emoji+' '+tier.short : '入力中'}</div>
       <div class="comp-rows">
         ${row('🚶 ',prop.walk, '分', prop.walk===bestWalk)}
         ${row('🚄 ',prop.shina,'分', prop.shina===bestShina)}
         ${row('💰 ',prop.price,'万', prop.price===bestPrice)}
         ${row('🏗 築',prop.age,'年', prop.age===bestAge)}
       </div>
-      ${prop.eliminated ? `<div class="comp-ng">⛔ ${prop.ngR[0]}</div>` : ''}
+      ${prop.hasAdvisory ? `<div class="comp-warn">⚠ ${prop.advisoryR[0]}</div>` : ''}
     `;
     grid.appendChild(c);
   });
@@ -775,7 +760,7 @@ function renderComp() {
   container.appendChild(grid);
 
   if (validScores.length >= 2) {
-    const best = list.find(p => p.total === bestTotal && !p.eliminated);
+    const best = list.find(p => p.total === bestTotal);
     const s = document.createElement('div');
     s.style.cssText = 'margin-top:10px;font-size:.72em;color:var(--muted);text-align:center;padding-top:8px;border-top:1px solid var(--border)';
     s.textContent = `🏆 現在1位: ${best?.name||'—'} (${bestTotal}点)`;

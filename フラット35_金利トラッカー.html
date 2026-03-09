@@ -24,11 +24,25 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Helvetica Neue','Hiragino Sans','Meiryo',sans-serif;
-  padding: 20px 16px 64px;
+  padding: 0 16px 64px;
   min-height: 100vh;
   line-height: 1.5;
 }
 .container { max-width: 960px; margin: 0 auto; }
+
+/* Top nav */
+.topnav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.topnav-back {
+  color: var(--muted); text-decoration: none; font-size: 0.80em;
+  transition: color 0.15s;
+}
+.topnav-back:hover { color: var(--blue); }
+.topnav-step { font-size: 0.68em; color: var(--muted); letter-spacing: .08em; }
 
 /* Header */
 .header { margin-bottom: 24px; }
@@ -248,10 +262,16 @@ body {
 <body>
 <div class="container">
 
+  <!-- Nav -->
+  <div class="topnav">
+    <a href="index.html" class="topnav-back">← ツール一覧</a>
+    <span class="topnav-step">STEP 1 / 4</span>
+  </div>
+
   <!-- Header -->
   <div class="header">
     <h1>📈 フラット35 金利トラッカー</h1>
-    <p>2010年1月〜2026年3月の月次金利推移と現在の歴史的位置を可視化</p>
+    <p>2010年1月〜2026年3月の月次金利推移と、現在の歴史的水準を確認できます</p>
     <div class="header-meta">
       <span class="badge">🏠 住宅金融支援機構 フラット35</span>
       <span class="badge">📅 最終更新: 2026年3月</span>
