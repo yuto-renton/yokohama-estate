@@ -60,7 +60,7 @@ body {
 /* ── Cards ── */
 .cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   width: 100%;
   max-width: 820px;
@@ -69,7 +69,7 @@ body {
   .cards { grid-template-columns: 1fr; max-width: 420px; }
 }
 @media (min-width: 681px) and (max-width: 860px) {
-  .cards { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }
 
 .card {
@@ -161,7 +161,7 @@ body {
   <div class="header">
     <div class="eyebrow">🏙 Yokohama</div>
     <h1>横浜 中古マンション<br>住宅購入ツール集</h1>
-    <p>賃貸 vs 購入の判断を数字で裏付けるためのツールを3本まとめています。</p>
+    <p>賃貸 vs 購入の判断を数字で裏付けるためのツールを4本まとめています。</p>
   </div>
 
   <!-- Cards -->
@@ -198,6 +198,18 @@ body {
       <div class="card-desc">
         SUUMOで気になった物件を4項目で即採点（100点満点）。
         最大5件を保存して並べて比較できます。
+      </div>
+      <div class="card-cta">開く →</div>
+    </a>
+
+
+    <a class="card" href="資産ダッシュボード.html" style="--accent-color: var(--red)">
+      <div class="card-icon">💹</div>
+      <div class="card-title">資産形成<br>ダッシュボード</div>
+      <div class="card-sub">ASSET DASHBOARD</div>
+      <div class="card-desc">
+        住宅ローン・NISA積立・家計バランス・日本株スクリーニングを
+        一画面で管理。マーケット情報もリアルタイム取得。
       </div>
       <div class="card-cta">開く →</div>
     </a>
