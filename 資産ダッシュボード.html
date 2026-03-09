@@ -35,9 +35,10 @@ body {
   background: #0a0d18;
   border-bottom: 1px solid #1a1d2e;
 }
-.topnav a { color: var(--muted); text-decoration: none; font-size: 0.80em; transition: color .15s; }
+.topnav a { color: var(--muted); text-decoration: none; font-size: 0.78em; transition: color .15s; }
 .topnav a:hover { color: var(--blue); }
-.topnav-step { font-size: 0.68em; color: #3a3d4e; letter-spacing: .08em; }
+.topnav-title { font-size: 0.62em; color: #3a3d50; letter-spacing: .04em; }
+.topnav-step  { font-size: 0.65em; color: #3a3d50; letter-spacing: .06em; }
 
 /* ── Market ticker ── */
 .market-bar {
@@ -63,12 +64,16 @@ body {
 
 /* ── Page header ── */
 .page-header {
-  padding: 28px 0 22px;
+  padding: 24px 0 20px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 28px;
 }
-.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-.page-header p  { font-size: 0.78em; color: var(--muted); }
+.page-step-label {
+  font-size: 0.64em; font-weight: 700; color: var(--red);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+}
+.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.page-desc { font-size: 0.82em; color: #999; line-height: 1.7; }
 
 /* ── Section ── */
 .section { margin-bottom: 28px; }
@@ -200,6 +205,7 @@ body {
 <!-- Nav -->
 <div class="topnav">
   <a href="index.html">← ツール一覧</a>
+  <span class="topnav-title">横浜マンション 判断支援</span>
   <span class="topnav-step">STEP 4 / 4</span>
 </div>
 
@@ -218,8 +224,9 @@ body {
 
   <!-- Page header -->
   <div class="page-header">
+    <div class="page-step-label">STEP 4 · 資産管理</div>
     <h1>資産サマリー</h1>
-    <p>主要数値を記録して、各分析ツールへ</p>
+    <p class="page-desc">現在の資産状況を手入力で記録し、各分析ツールへの入口にします。金額の更新と月次メモで、購入判断の全体像を把握します。</p>
   </div>
 
   <!-- Asset summary -->
@@ -308,46 +315,46 @@ body {
   <!-- Analysis tools -->
   <div class="section">
     <div class="section-head">
-      <span class="section-title">分析ツール</span>
+      <span class="section-title">購入判断ツール</span>
     </div>
 
     <div class="tool-grid">
       <a class="tool-card" href="nisa_simulator.html" style="--accent: #06d6a0">
         <div class="tool-icon">📈</div>
         <div class="tool-name">NISA 積立シミュレーター</div>
-        <div class="tool-desc">積立額・期間・年利から最終評価額を試算。複利の力を確認できます。</div>
-        <div class="tool-cta">試算する →</div>
+        <div class="tool-desc">月×年 = いくら？　積立額と期間を変えながら、複利がもたらす最終評価額をグラフで確認します。</div>
+        <div class="tool-cta">将来額を試算する →</div>
       </a>
 
       <a class="tool-card" href="家計キャッシュフロー.html" style="--accent: #f72585">
         <div class="tool-icon">💰</div>
         <div class="tool-name">家計キャッシュフロー</div>
-        <div class="tool-desc">月収入・住居費を整理して、現在と購入後の家計余力を確認できます。</div>
-        <div class="tool-cta">確認する →</div>
+        <div class="tool-desc">購入後に毎月いくら残る？　現在の家計とローン後を並べて、家計余力の変化を数字で把握します。</div>
+        <div class="tool-cta">家計を比較する →</div>
       </a>
 
       <a class="tool-card" href="rent_vs_buy.html" style="--accent: #7eb8f7">
         <div class="tool-icon">🏠</div>
         <div class="tool-name">賃貸 vs 購入シミュレーター</div>
-        <div class="tool-desc">物件価格・金利・売却シナリオから損益分岐点を計算します。</div>
-        <div class="tool-cta">比較する →</div>
+        <div class="tool-desc">トータルでどちらが得？　物件価格・金利・売却シナリオから損益分岐点を算出します。</div>
+        <div class="tool-cta">損益分岐点を確認する →</div>
       </a>
 
       <a class="tool-card" href="株スクリーニング.html" style="--accent: #f4a261">
         <div class="tool-icon">🔍</div>
-        <div class="tool-name">日本株スクリーニング</div>
-        <div class="tool-desc">PER・PBR・ROE・配当でフィルタリング。25銘柄をソートして比較できます。</div>
-        <div class="tool-cta">スクリーニングする →</div>
+        <div class="tool-name">日本株スクリーニング <span style="font-size:.65em;background:rgba(244,162,97,.12);border:1px solid rgba(244,162,97,.3);border-radius:10px;padding:1px 7px;vertical-align:middle;font-weight:400">補助</span></div>
+        <div class="tool-desc">余剰資金の投資先を検討。PER・PBR・ROE・配当利回りで25銘柄を絞り込み、相対的な位置づけを確認します。</div>
+        <div class="tool-cta">銘柄をスクリーニングする →</div>
       </a>
     </div>
 
     <div class="side-tools">
       <a class="side-link" href="フラット35_金利トラッカー.html">
-        <span>📊 フラット35 金利トラッカー — 現在の金利を歴史的水準で確認</span>
+        <span>📊 フラット35 金利トラッカー — 今の金利が歴史的にどの水準かを確認（STEP 1）</span>
         <span class="side-link-arrow">→</span>
       </a>
       <a class="side-link" href="物件スコアリング.html">
-        <span>🏠 物件スコアリング — 候補物件を採点・比較</span>
+        <span>🏠 物件スコアリング — 候補物件を4軸で採点・比較（STEP 3）</span>
         <span class="side-link-arrow">→</span>
       </a>
     </div>

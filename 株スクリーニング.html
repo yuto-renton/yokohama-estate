@@ -36,22 +36,34 @@ body {
   background: #0a0d18;
   border-bottom: 1px solid #1a1d2e;
 }
-.topnav a { color: var(--muted); text-decoration: none; font-size: 0.80em; transition: color .15s; }
+.topnav a { color: var(--muted); text-decoration: none; font-size: 0.78em; transition: color .15s; }
 .topnav a:hover { color: var(--orange); }
+.topnav-title { font-size: 0.62em; color: #3a3d50; letter-spacing: .04em; }
 .topnav-badge {
-  font-size: 0.68em; background: rgba(244,162,97,.10);
-  color: var(--orange); padding: 3px 10px; border-radius: 20px;
-  border: 1px solid rgba(244,162,97,.25);
+  font-size: 0.65em; background: rgba(244,162,97,.08);
+  color: var(--orange); padding: 2px 10px; border-radius: 20px;
+  border: 1px solid rgba(244,162,97,.22);
 }
 
 /* ── Page header ── */
 .page-header {
-  padding: 28px 0 22px;
+  padding: 24px 0 20px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
 }
-.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-.page-header p  { font-size: 0.78em; color: var(--muted); }
+.page-step-label {
+  font-size: 0.64em; font-weight: 700; color: var(--orange);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+}
+.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.page-desc { font-size: 0.82em; color: #999; line-height: 1.7; }
+.supplementary-note {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: rgba(244,162,97,.06); border: 1px solid rgba(244,162,97,.18);
+  border-radius: 9px; padding: 11px 14px; margin-top: 12px;
+  font-size: 0.76em; color: #888; line-height: 1.6;
+}
+.supplementary-note-icon { font-size: 1.0em; flex-shrink: 0; margin-top: 1px; }
 
 /* ── Section ── */
 .section { margin-bottom: 28px; }
@@ -162,6 +174,7 @@ td:nth-child(2) { text-align: left; font-weight: 600; color: var(--text); }
 <!-- Nav -->
 <div class="topnav">
   <a href="資産ダッシュボード.html">← 資産サマリーへ</a>
+  <span class="topnav-title">横浜マンション 判断支援</span>
   <span class="topnav-badge">日本株スクリーニング</span>
 </div>
 
@@ -169,8 +182,13 @@ td:nth-child(2) { text-align: left; font-weight: 600; color: var(--text); }
 
   <!-- Page header -->
   <div class="page-header">
+    <div class="page-step-label">補助ツール · 余剰資金の投資先検討</div>
     <h1>日本株スクリーニング</h1>
-    <p>PER・PBR・ROE・配当利回りでフィルタリングして割安・高配当銘柄を探します（参考データ）</p>
+    <p class="page-desc">住宅購入後の余剰資金をどこに振り向けるかを検討するための参考ツールです。PER・PBR・ROE・配当利回りで25銘柄を絞り込み、投資候補の相対的な位置づけを確認します。</p>
+    <div class="supplementary-note">
+      <span class="supplementary-note-icon">💡</span>
+      <span>このツールは購入判断の本筋ではなく、購入後の資産運用を考える際の補助として使います。マンション購入の意思決定には <a href="rent_vs_buy.html" style="color:var(--orange);text-decoration:none">賃貸vs購入シミュレーター</a> や <a href="家計キャッシュフロー.html" style="color:var(--orange);text-decoration:none">家計キャッシュフロー</a> を先に確認することを推奨します。</span>
+    </div>
   </div>
 
   <!-- Filters -->

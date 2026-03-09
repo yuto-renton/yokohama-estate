@@ -28,38 +28,36 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Helvetica Neue', 'Hiragino Sans', 'Meiryo', sans-serif;
-  padding: 0 16px 60px;
+  padding: 0 0 60px;
   min-height: 100vh;
   line-height: 1.5;
 }
 
-.container { max-width: 900px; margin: 0 auto; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 16px; }
 
 /* ── Top nav ── */
 .topnav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0 18px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: #0a0d18;
+  border-bottom: 1px solid #1a1d2e;
 }
 .topnav-back {
-  color: var(--muted);
-  text-decoration: none;
-  font-size: 0.80em;
-  transition: color 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  color: var(--muted); text-decoration: none; font-size: 0.78em;
+  transition: color 0.15s; display: flex; align-items: center; gap: 5px;
 }
 .topnav-back:hover { color: var(--blue); }
-.topnav-step { font-size: 0.68em; color: var(--muted); letter-spacing: .08em; }
+.topnav-title { font-size: 0.62em; color: #3a3d50; letter-spacing: .04em; }
+.topnav-step  { font-size: 0.65em; color: #3a3d50; letter-spacing: .06em; }
 
 /* ── Header ── */
-.header { margin-bottom: 24px; }
-.header h1 { font-size: 1.35em; color: var(--blue); font-weight: 700; }
-.header p { font-size: 0.82em; color: var(--muted); margin-top: 4px; }
+.header { margin-bottom: 20px; padding-top: 24px; }
+.header h1 { font-size: 1.35em; color: var(--text); font-weight: 700; margin-bottom: 6px; }
+.page-step-label {
+  font-size: 0.64em; font-weight: 700; color: var(--blue);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+}
+.page-desc { font-size: 0.82em; color: #999; line-height: 1.7; margin-top: 4px; }
 
 /* ── Presets ── */
 .presets {
@@ -300,18 +298,21 @@ tr.sale-row td { color: var(--green); }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Nav -->
-  <div class="topnav">
-    <a href="index.html" class="topnav-back">← ツール一覧</a>
-    <span class="topnav-step">STEP 2 / 4</span>
-  </div>
+<!-- Nav -->
+<div class="topnav">
+  <a href="index.html" class="topnav-back">← ツール一覧</a>
+  <span class="topnav-title">横浜マンション 判断支援</span>
+  <span class="topnav-step">STEP 2 / 4</span>
+</div>
+
+<div class="container">
 
   <!-- Header -->
   <div class="header">
-    <h1>📊 賃貸 vs 購入 シミュレーター</h1>
-    <p>横浜エリア 中古マンション — 賃貸継続と購入の総コストを比較します</p>
+    <div class="page-step-label">STEP 2 · コスト比較</div>
+    <h1>賃貸 vs 購入 シミュレーター</h1>
+    <p class="page-desc">物件価格・金利・売却シナリオを変えながら、賃貸継続と購入の総コストを比較します。「何年住めば購入が得か」の損益分岐点を数字で確認します。</p>
   </div>
 
   <!-- Presets -->

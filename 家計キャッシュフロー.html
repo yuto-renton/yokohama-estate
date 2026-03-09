@@ -36,22 +36,27 @@ body {
   background: #0a0d18;
   border-bottom: 1px solid #1a1d2e;
 }
-.topnav a { color: var(--muted); text-decoration: none; font-size: 0.80em; transition: color .15s; }
+.topnav a { color: var(--muted); text-decoration: none; font-size: 0.78em; transition: color .15s; }
 .topnav a:hover { color: var(--pink); }
+.topnav-title { font-size: 0.62em; color: #3a3d50; letter-spacing: .04em; }
 .topnav-badge {
-  font-size: 0.68em; background: rgba(247,37,133,.10);
-  color: var(--pink); padding: 3px 10px; border-radius: 20px;
-  border: 1px solid rgba(247,37,133,.25);
+  font-size: 0.65em; background: rgba(247,37,133,.08);
+  color: var(--pink); padding: 2px 10px; border-radius: 20px;
+  border: 1px solid rgba(247,37,133,.22);
 }
 
 /* ── Page header ── */
 .page-header {
-  padding: 28px 0 22px;
+  padding: 24px 0 20px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 28px;
 }
-.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-.page-header p  { font-size: 0.78em; color: var(--muted); }
+.page-step-label {
+  font-size: 0.64em; font-weight: 700; color: var(--pink);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+}
+.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.page-desc { font-size: 0.82em; color: #999; line-height: 1.7; }
 
 /* ── Section ── */
 .section { margin-bottom: 32px; }
@@ -176,6 +181,7 @@ input[type=range]::-webkit-slider-thumb {
 <!-- Nav -->
 <div class="topnav">
   <a href="資産ダッシュボード.html">← 資産サマリーへ</a>
+  <span class="topnav-title">横浜マンション 判断支援</span>
   <span class="topnav-badge">家計キャッシュフロー</span>
 </div>
 
@@ -183,8 +189,9 @@ input[type=range]::-webkit-slider-thumb {
 
   <!-- Page header -->
   <div class="page-header">
+    <div class="page-step-label">購入判断 · 家計確認</div>
     <h1>家計キャッシュフロー</h1>
-    <p>現在の家計と、マンション購入後の家計を並べて余力を確認します</p>
+    <p class="page-desc">手取り収入と各種支出を入力し、現在の家計とローン後の家計を並べて比較します。月次の余剰がどう変わるかを確認して、購入後の生活水準を判断します。</p>
   </div>
 
   <!-- Inputs -->

@@ -23,27 +23,32 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Helvetica Neue','Hiragino Sans','Meiryo',sans-serif;
-  padding: 0 14px 64px;
+  padding: 0 0 64px;
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
 }
-.container { max-width: 900px; margin: 0 auto; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 14px; }
 
 /* ── Top nav ── */
 .topnav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 0 18px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #0a0d18;
+  border-bottom: 1px solid #1a1d2e;
 }
-.topnav-back { color: var(--muted); text-decoration: none; font-size: 0.80em; transition: color 0.15s; }
+.topnav-back { color: var(--muted); text-decoration: none; font-size: 0.78em; transition: color 0.15s; }
 .topnav-back:hover { color: var(--blue); }
-.topnav-step { font-size: 0.68em; color: var(--muted); letter-spacing: .08em; }
+.topnav-title { font-size: 0.62em; color: #3a3d50; letter-spacing: .04em; }
+.topnav-step  { font-size: 0.65em; color: #3a3d50; letter-spacing: .06em; }
 
 /* ── Header ── */
-.header { margin-bottom: 14px; }
-.header h1 { font-size: 1.25em; color: var(--blue); }
-.header p  { font-size: 0.78em; color: var(--muted); margin-top: 3px; }
+.header { margin-bottom: 14px; padding-top: 20px; }
+.header h1 { font-size: 1.25em; color: var(--text); font-weight: 700; margin-bottom: 6px; }
+.page-step-label {
+  font-size: 0.64em; font-weight: 700; color: var(--green);
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+}
+.page-desc { font-size: 0.80em; color: #999; line-height: 1.7; margin-top: 4px; }
 
 /* ── Scoring basis (collapsible) ── */
 .basis-wrap {
@@ -229,18 +234,21 @@ body {
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Nav -->
-  <div class="topnav">
-    <a href="index.html" class="topnav-back">← ツール一覧</a>
-    <span class="topnav-step">STEP 3 / 4</span>
-  </div>
+<!-- Nav -->
+<div class="topnav">
+  <a href="index.html" class="topnav-back">← ツール一覧</a>
+  <span class="topnav-title">横浜マンション 判断支援</span>
+  <span class="topnav-step">STEP 3 / 4</span>
+</div>
+
+<div class="container">
 
   <!-- Header -->
   <div class="header">
-    <h1>🏠 物件スコアリング</h1>
-    <p>物件情報を入力してその場で採点・比較 — 内見前の絞り込みに活用できます</p>
+    <div class="page-step-label">STEP 3 · 物件評価</div>
+    <h1>物件スコアリング</h1>
+    <p class="page-desc">気になった物件をアクセス・価格・築年数・環境の4軸で採点します。主観を数値化することで、内見前の候補絞り込みをしやすくします。</p>
   </div>
 
   <!-- Scoring basis (collapsible) -->
