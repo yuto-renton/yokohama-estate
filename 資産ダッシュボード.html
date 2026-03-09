@@ -587,7 +587,7 @@
                 <Slider label="月積立額"   value={nisaMonthly} min={1}  max={10} step={0.5} onChange={setNisaMonthly} unit="万円" />
                 <Slider label="積立期間"   value={nisaYears}   min={5}  max={30} step={1}   onChange={setNisaYears}   unit="年" />
                 <Slider label="年利（想定）" value={nisaReturn} min={2}  max={10} step={0.5} onChange={setNisaReturn}  unit="%"
-                  note="S&P500長期平均は約7%" />
+                  note={'S&P500長期平均は約7%'} />
                 <div style={{ display:"flex", gap:12, flexWrap:"wrap", margin:"20px 0" }}>
                   <Stat label="元本総額"   value={`${nisa.invested}万円`}      color="#888" />
                   <Stat label="運用益"     value={formatMan(nisa.gain)}         color="#06d6a0" />
