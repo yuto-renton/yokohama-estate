@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>家計キャッシュフロー</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #0f1117;
+  --surface: #1a1d27;
+  --surf2:   #22253a;
+  --border:  #2a2d3e;
+  --text:    #e0e0e0;
+  --muted:   #666;
+  --blue:    #7eb8f7;
+  --green:   #6dd98c;
+  --yellow:  #f7c948;
+  --red:     #ff6b6b;
+  --pink:    #f72585;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Helvetica Neue', 'Hiragino Sans', 'Meiryo', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 64px;
+  line-height: 1.5;
+}
+.container { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+
+/* ── Nav ── */
+.topnav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px;
+  background: #0a0d18;
+  border-bottom: 1px solid #1a1d2e;
+}
+.topnav a { color: var(--muted); text-decoration: none; font-size: 0.80em; transition: color .15s; }
+.topnav a:hover { color: var(--pink); }
+.topnav-badge {
+  font-size: 0.68em; background: rgba(247,37,133,.10);
+  color: var(--pink); padding: 3px 10px; border-radius: 20px;
+  border: 1px solid rgba(247,37,133,.25);
+}
+
+/* ── Page header ── */
+.page-header {
+  padding: 28px 0 22px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.page-header p  { font-size: 0.78em; color: var(--muted); }
+
+/* ── Section ── */
+.section { margin-bottom: 32px; }
+.section-title {
+  font-size: 0.68em; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 16px;
+}
+
+/* ── 2-col layout ── */
+.two-col {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 540px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ── Input blocks ── */
+.input-block {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 16px;
+}
+.input-block-title {
+  font-size: 0.72em; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 14px;
+}
+
+.slider-group { display: flex; flex-direction: column; gap: 14px; }
+.slider-row   { display: flex; flex-direction: column; gap: 5px; }
+.slider-label-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.slider-label { font-size: 0.80em; color: var(--muted); }
+.slider-val   { font-size: 0.98em; font-weight: 700; color: var(--pink); }
+.slider-val small { font-size: 0.60em; color: var(--muted); font-weight: 400; margin-left: 2px; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: var(--surf2); border-radius: 4px; outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--pink); cursor: pointer; transition: background .15s;
+}
+
+/* ── Comparison panel ── */
+.compare-panel {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 480px) { .compare-panel { grid-template-columns: 1fr; } }
+
+.compare-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 16px;
+}
+.compare-card.buy-card { border-color: rgba(247,37,133,.25); background: rgba(247,37,133,.04); }
+.compare-label {
+  font-size: 0.70em; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px;
+}
+.compare-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 5px 0; border-bottom: 1px solid rgba(42,45,62,.5);
+  font-size: 0.82em;
+}
+.compare-row:last-child { border-bottom: none; }
+.compare-row-label { color: var(--muted); }
+.compare-row-val   { font-weight: 600; color: var(--text); }
+.compare-row-val.minus { color: var(--red); }
+.compare-row-val.plus  { color: var(--green); }
+.compare-row-val.big   { font-size: 1.18em; font-weight: 800; color: var(--pink); }
+.compare-row-val.big.ok { color: var(--green); }
+.compare-row-val.big.ng { color: var(--red); }
+
+/* ── Balance bar ── */
+.balance-section { margin-top: 4px; }
+.balance-bar-wrap {
+  height: 12px; background: var(--surf2); border-radius: 6px; overflow: hidden;
+  margin: 10px 0 4px;
+}
+.balance-bar {
+  height: 100%; border-radius: 6px;
+  transition: width .4s ease;
+}
+.balance-legend {
+  display: flex; justify-content: space-between;
+  font-size: 0.68em; color: var(--muted);
+}
+
+/* ── Surplus summary ── */
+.surplus-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 16px;
+}
+@media (max-width: 480px) { .surplus-cards { grid-template-columns: 1fr; } }
+.surplus-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 11px; padding: 14px 14px 12px; text-align: center;
+}
+.surplus-card-label { font-size: 0.68em; color: var(--muted); margin-bottom: 7px; }
+.surplus-card-val   {
+  font-size: 1.3em; font-weight: 800; color: var(--text); line-height: 1;
+}
+.surplus-card-unit  { font-size: 0.48em; font-weight: 500; color: var(--muted); margin-left: 2px; }
+
+/* ── Warning ── */
+.warning-panel {
+  background: rgba(255,107,107,.07); border: 1px solid rgba(255,107,107,.25);
+  border-radius: 10px; padding: 12px 16px; font-size: 0.78em;
+  line-height: 1.7; color: var(--muted); margin-top: 12px;
+}
+.warning-panel strong { color: var(--red); }
+
+/* ── Footer ── */
+.footer { margin-top: 36px; font-size: 0.70em; color: #333; text-align: center; line-height: 1.9; }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<div class="topnav">
+  <a href="資産ダッシュボード.html">← 資産サマリーへ</a>
+  <span class="topnav-badge">家計キャッシュフロー</span>
+</div>
+
+<div class="container">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <h1>家計キャッシュフロー</h1>
+    <p>現在の家計と、マンション購入後の家計を並べて余力を確認します</p>
+  </div>
+
+  <!-- Inputs -->
+  <div class="section">
+    <div class="section-title">収入・支出の設定</div>
+    <div class="two-col">
+
+      <!-- 収入 -->
+      <div class="input-block">
+        <div class="input-block-title">収入</div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">手取り月収</span>
+              <span class="slider-val" id="v-income">30<small>万円</small></span>
+            </div>
+            <input type="range" id="r-income" min="15" max="80" step="0.5" value="30">
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">住宅補助（現在）</span>
+              <span class="slider-val" id="v-housing-support">0<small>万円</small></span>
+            </div>
+            <input type="range" id="r-housing-support" min="0" max="10" step="0.5" value="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- 現在の支出 -->
+      <div class="input-block">
+        <div class="input-block-title">現在の住居費</div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">家賃（補助前）</span>
+              <span class="slider-val" id="v-rent">11<small>万円</small></span>
+            </div>
+            <input type="range" id="r-rent" min="5" max="25" step="0.5" value="11">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Purchase settings -->
+  <div class="section">
+    <div class="section-title">購入後の設定</div>
+    <div class="two-col">
+
+      <!-- ローン -->
+      <div class="input-block">
+        <div class="input-block-title">住宅ローン</div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">月々の返済額</span>
+              <span class="slider-val" id="v-loan">12<small>万円</small></span>
+            </div>
+            <input type="range" id="r-loan" min="5" max="30" step="0.5" value="12">
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">管理費・修繕積立</span>
+              <span class="slider-val" id="v-mgmt">2.5<small>万円</small></span>
+            </div>
+            <input type="range" id="r-mgmt" min="0.5" max="5" step="0.5" value="2.5">
+          </div>
+        </div>
+      </div>
+
+      <!-- 共通支出 -->
+      <div class="input-block">
+        <div class="input-block-title">共通支出（月）</div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">生活費（食費・通信等）</span>
+              <span class="slider-val" id="v-living">10<small>万円</small></span>
+            </div>
+            <input type="range" id="r-living" min="5" max="25" step="0.5" value="10">
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">NISA・投資積立</span>
+              <span class="slider-val" id="v-nisa">5<small>万円</small></span>
+            </div>
+            <input type="range" id="r-nisa" min="0" max="20" step="0.5" value="5">
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">その他（娯楽・交際等）</span>
+              <span class="slider-val" id="v-other">3<small>万円</small></span>
+            </div>
+            <input type="range" id="r-other" min="0" max="15" step="0.5" value="3">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="section">
+    <div class="section-title">家計比較</div>
+    <div class="compare-panel">
+
+      <!-- 現在 -->
+      <div class="compare-card">
+        <div class="compare-label">現在（賃貸）</div>
+        <div class="compare-row">
+          <span class="compare-row-label">手取り収入</span>
+          <span class="compare-row-val" id="c-income-rent">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">住宅補助</span>
+          <span class="compare-row-val plus" id="c-support-rent">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">家賃（自己負担）</span>
+          <span class="compare-row-val minus" id="c-rent-net">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">生活費</span>
+          <span class="compare-row-val minus" id="c-living-rent">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">NISA積立</span>
+          <span class="compare-row-val minus" id="c-nisa-rent">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">その他</span>
+          <span class="compare-row-val minus" id="c-other-rent">—</span>
+        </div>
+        <div class="compare-row" style="margin-top:8px; border-top: 1px solid var(--border); padding-top:10px">
+          <span class="compare-row-label">月余剰</span>
+          <span class="compare-row-val big" id="c-surplus-rent">—</span>
+        </div>
+        <div class="balance-section">
+          <div class="balance-bar-wrap">
+            <div class="balance-bar" id="bar-rent" style="background:var(--green)"></div>
+          </div>
+          <div class="balance-legend">
+            <span>支出</span><span id="bar-rent-pct">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 購入後 -->
+      <div class="compare-card buy-card">
+        <div class="compare-label" style="color:var(--pink)">購入後</div>
+        <div class="compare-row">
+          <span class="compare-row-label">手取り収入</span>
+          <span class="compare-row-val" id="c-income-buy">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">住宅補助</span>
+          <span class="compare-row-val" style="color:var(--muted)">なし</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">返済額</span>
+          <span class="compare-row-val minus" id="c-loan">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">管理費・修繕</span>
+          <span class="compare-row-val minus" id="c-mgmt">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">生活費</span>
+          <span class="compare-row-val minus" id="c-living-buy">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">NISA積立</span>
+          <span class="compare-row-val minus" id="c-nisa-buy">—</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-row-label">その他</span>
+          <span class="compare-row-val minus" id="c-other-buy">—</span>
+        </div>
+        <div class="compare-row" style="margin-top:8px; border-top: 1px solid rgba(247,37,133,.2); padding-top:10px">
+          <span class="compare-row-label">月余剰</span>
+          <span class="compare-row-val big" id="c-surplus-buy">—</span>
+        </div>
+        <div class="balance-section">
+          <div class="balance-bar-wrap">
+            <div class="balance-bar" id="bar-buy" style="background:var(--pink)"></div>
+          </div>
+          <div class="balance-legend">
+            <span>支出</span><span id="bar-buy-pct">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Surplus summary -->
+    <div style="margin-top: 18px">
+      <div class="section-title" style="margin-bottom:12px">サマリー</div>
+      <div class="surplus-cards">
+        <div class="surplus-card">
+          <div class="surplus-card-label">現在の月余剰</div>
+          <div class="surplus-card-val" id="s-rent">—<span class="surplus-card-unit">万円</span></div>
+        </div>
+        <div class="surplus-card">
+          <div class="surplus-card-label">購入後の月余剰</div>
+          <div class="surplus-card-val" id="s-buy">—<span class="surplus-card-unit">万円</span></div>
+        </div>
+        <div class="surplus-card">
+          <div class="surplus-card-label">余剰の変化</div>
+          <div class="surplus-card-val" id="s-diff">—<span class="surplus-card-unit">万円</span></div>
+        </div>
+      </div>
+      <div id="warning-area"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">試算値はあくまで参考です。実際の判断には専門家への相談を推奨します。</div>
+
+<script>
+const sliders = {
+  income:         { el: document.getElementById('r-income'),         display: 'v-income',         suffix: '万円' },
+  housing_support:{ el: document.getElementById('r-housing-support'),display: 'v-housing-support',suffix: '万円' },
+  rent:           { el: document.getElementById('r-rent'),           display: 'v-rent',           suffix: '万円' },
+  loan:           { el: document.getElementById('r-loan'),           display: 'v-loan',           suffix: '万円' },
+  mgmt:           { el: document.getElementById('r-mgmt'),           display: 'v-mgmt',           suffix: '万円' },
+  living:         { el: document.getElementById('r-living'),         display: 'v-living',         suffix: '万円' },
+  nisa:           { el: document.getElementById('r-nisa'),           display: 'v-nisa',           suffix: '万円' },
+  other:          { el: document.getElementById('r-other'),          display: 'v-other',          suffix: '万円' },
+};
+
+function fmt(v, sign=false) {
+  const s = sign && v > 0 ? '+' : '';
+  return s + v.toFixed(1) + '万円';
+}
+
+function setVal(id, v, colorClass) {
+  const el = document.getElementById(id);
+  el.textContent = v;
+  if (colorClass) {
+    el.className = 'compare-row-val ' + colorClass;
+  }
+}
+
+function calc() {
+  // Update slider displays
+  Object.values(sliders).forEach(s => {
+    const v = parseFloat(s.el.value);
+    document.getElementById(s.display).innerHTML = v + '<small>' + s.suffix + '</small>';
+  });
+
+  const income  = parseFloat(sliders.income.el.value);
+  const support = parseFloat(sliders.housing_support.el.value);
+  const rent    = parseFloat(sliders.rent.el.value);
+  const loan    = parseFloat(sliders.loan.el.value);
+  const mgmt    = parseFloat(sliders.mgmt.el.value);
+  const living  = parseFloat(sliders.living.el.value);
+  const nisa    = parseFloat(sliders.nisa.el.value);
+  const other   = parseFloat(sliders.other.el.value);
+
+  const rentNet = Math.max(0, rent - support); // 自己負担家賃
+
+  // 賃貸時の合計収入・支出
+  const totalIncomeRent = income + support;
+  const totalCostRent   = rentNet + living + nisa + other;
+  const surplusRent     = totalIncomeRent - rent - living - nisa - other; // 補助込みで比較
+
+  // 購入後
+  const totalCostBuy    = loan + mgmt + living + nisa + other;
+  const surplusBuy      = income - totalCostBuy;
+
+  const diff = surplusBuy - surplusRent;
+
+  // 賃貸カード
+  document.getElementById('c-income-rent').textContent = fmt(income);
+  document.getElementById('c-support-rent').textContent = support > 0 ? '+' + fmt(support) : '0万円';
+  document.getElementById('c-rent-net').textContent = '−' + fmt(rentNet) + '（実質）';
+  document.getElementById('c-living-rent').textContent = '−' + fmt(living);
+  document.getElementById('c-nisa-rent').textContent   = '−' + fmt(nisa);
+  document.getElementById('c-other-rent').textContent  = '−' + fmt(other);
+  const srEl = document.getElementById('c-surplus-rent');
+  srEl.textContent = fmt(surplusRent);
+  srEl.className = 'compare-row-val big ' + (surplusRent >= 0 ? 'ok' : 'ng');
+
+  // 購入カード
+  document.getElementById('c-income-buy').textContent  = fmt(income);
+  document.getElementById('c-loan').textContent        = '−' + fmt(loan);
+  document.getElementById('c-mgmt').textContent        = '−' + fmt(mgmt);
+  document.getElementById('c-living-buy').textContent  = '−' + fmt(living);
+  document.getElementById('c-nisa-buy').textContent    = '−' + fmt(nisa);
+  document.getElementById('c-other-buy').textContent   = '−' + fmt(other);
+  const sbEl = document.getElementById('c-surplus-buy');
+  sbEl.textContent = fmt(surplusBuy);
+  sbEl.className = 'compare-row-val big ' + (surplusBuy >= 0 ? 'ok' : 'ng');
+
+  // Balance bars (支出比率)
+  const costRatioBuy = Math.min(100, totalCostBuy / income * 100);
+  const costRatioRent = Math.min(100, (rentNet + living + nisa + other) / income * 100);
+  document.getElementById('bar-rent').style.width = costRatioRent.toFixed(0) + '%';
+  document.getElementById('bar-rent-pct').textContent = costRatioRent.toFixed(0) + '%';
+  document.getElementById('bar-buy').style.width = costRatioBuy.toFixed(0) + '%';
+  document.getElementById('bar-buy-pct').textContent = costRatioBuy.toFixed(0) + '%';
+
+  // Surplus summary
+  const sRentEl = document.getElementById('s-rent');
+  sRentEl.innerHTML = surplusRent.toFixed(1) + '<span class="surplus-card-unit">万円</span>';
+  sRentEl.style.color = surplusRent >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const sBuyEl = document.getElementById('s-buy');
+  sBuyEl.innerHTML = surplusBuy.toFixed(1) + '<span class="surplus-card-unit">万円</span>';
+  sBuyEl.style.color = surplusBuy >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const sDiffEl = document.getElementById('s-diff');
+  sDiffEl.innerHTML = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '<span class="surplus-card-unit">万円</span>';
+  sDiffEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Warning
+  const warningArea = document.getElementById('warning-area');
+  const warnings = [];
+  if (surplusBuy < 0) warnings.push('<strong>⚠ 購入後の月余剰がマイナスです。</strong> 支出の見直しか、ローン額の圧縮を検討してください。');
+  if (costRatioBuy > 40) warnings.push('住居費（返済+管理費）が収入の ' + ((loan + mgmt) / income * 100).toFixed(0) + '% を超えています。一般に25〜30%以下が推奨されます。');
+  if (nisa < 1 && surplusBuy > 3) warnings.push('余剰があります。NISA積立を増やすことで資産形成を加速できます。');
+  if (warnings.length > 0) {
+    warningArea.innerHTML = '<div class="warning-panel">' + warnings.join('<br>') + '</div>';
+  } else {
+    warningArea.innerHTML = '';
+  }
+}
+
+Object.values(sliders).forEach(s => s.el.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>

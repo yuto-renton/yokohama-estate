@@ -1,665 +1,503 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>資産形成ダッシュボード</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif; }
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%; height: 4px;
-      border-radius: 2px;
-      background: #e0e4ff;
-      outline: none;
-      cursor: pointer;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: #4361ee;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(67,97,238,0.4);
-    }
-    input[type=range]::-moz-range-thumb {
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: #4361ee;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 2px 6px rgba(67,97,238,0.4);
-    }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { padding: 10px 12px; text-align: left; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
-    th {
-      background: #f8f9ff;
-      font-weight: 700;
-      color: #555;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-      position: sticky;
-      top: 0;
-    }
-    th:hover { background: #eef0ff; }
-    tr:hover td { background: #fafbff; }
-    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.7; } }
-    .skeleton {
-      background: rgba(255,255,255,0.25);
-      border-radius: 4px;
-      animation: pulse 1.5s ease-in-out infinite;
-      display: inline-block;
-    }
-    @media (max-width: 600px) {
-      th, td { padding: 7px 5px; font-size: 11px; }
-    }
-    .site-nav {
-      background: #0a0d18;
-      border-bottom: 1px solid #1a1a3a;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .site-nav a {
-      color: #555;
-      text-decoration: none;
-      font-size: 13px;
-      transition: color 0.15s;
-    }
-    .site-nav a:hover { color: #7eb8f7; }
-    .site-nav-step { font-size: 11px; color: #444; letter-spacing: 0.08em; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資産サマリー</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #0f1117;
+  --surface: #1a1d27;
+  --surf2:   #22253a;
+  --border:  #2a2d3e;
+  --text:    #e0e0e0;
+  --muted:   #666;
+  --blue:    #7eb8f7;
+  --green:   #6dd98c;
+  --yellow:  #f7c948;
+  --red:     #ff6b6b;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Helvetica Neue', 'Hiragino Sans', 'Meiryo', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 64px;
+  line-height: 1.5;
+}
+.container { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+
+/* ── Nav ── */
+.topnav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px;
+  background: #0a0d18;
+  border-bottom: 1px solid #1a1d2e;
+}
+.topnav a { color: var(--muted); text-decoration: none; font-size: 0.80em; transition: color .15s; }
+.topnav a:hover { color: var(--blue); }
+.topnav-step { font-size: 0.68em; color: #3a3d4e; letter-spacing: .08em; }
+
+/* ── Market ticker ── */
+.market-bar {
+  background: #0c0e1a;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.market-inner {
+  max-width: 760px; margin: 0 auto;
+  display: flex; align-items: center; gap: 24px;
+}
+.market-label { font-size: 0.65em; font-weight: 700; color: #4361ee; letter-spacing: .1em; flex-shrink: 0; }
+.ticker { display: inline-flex; gap: 6px; align-items: baseline; }
+.ticker-name { font-size: 0.70em; color: var(--muted); }
+.ticker-val  { font-size: 0.88em; font-weight: 700; color: var(--text); }
+.ticker-chg  { font-size: 0.70em; font-weight: 600; }
+.up   { color: var(--green); }
+.down { color: var(--red); }
+.ticker-skeleton { display: inline-block; width: 60px; height: 12px; background: #1a1d27; border-radius: 3px; vertical-align: middle; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:.7} }
+
+/* ── Page header ── */
+.page-header {
+  padding: 28px 0 22px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.page-header h1 { font-size: 1.25em; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.page-header p  { font-size: 0.78em; color: var(--muted); }
+
+/* ── Section ── */
+.section { margin-bottom: 28px; }
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.section-title {
+  font-size: 0.68em; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: .1em;
+}
+.btn-sm {
+  font-size: 0.70em; padding: 4px 12px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surf2);
+  color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.btn-sm:hover { border-color: var(--blue); color: var(--blue); }
+.btn-sm.active { border-color: var(--blue); color: var(--blue); background: rgba(126,184,247,.08); }
+
+/* ── Asset cards ── */
+.asset-cards {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 560px) { .asset-cards { grid-template-columns: repeat(2, 1fr); } }
+
+.asset-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 11px; padding: 14px 14px 12px;
+}
+.asset-card.total-card { border-color: #2d3a5a; background: #151828; }
+.asset-card-label { font-size: 0.68em; color: var(--muted); margin-bottom: 7px; }
+.asset-card-val {
+  font-size: 1.4em; font-weight: 800; color: var(--text);
+  line-height: 1;
+}
+.asset-card.total-card .asset-card-val { color: var(--blue); }
+.asset-card-unit { font-size: 0.55em; font-weight: 500; color: var(--muted); margin-left: 2px; }
+
+/* Edit mode inputs */
+.asset-input {
+  width: 100%; background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 1.1em; font-weight: 700;
+  padding: 6px 8px; outline: none; transition: border-color .15s;
+  -moz-appearance: textfield;
+}
+.asset-input::-webkit-outer-spin-button, .asset-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.asset-input:focus { border-color: var(--blue); }
+.asset-updated { font-size: 0.68em; color: #3a3d4e; margin-top: 10px; }
+
+/* ── Monthly record ── */
+.monthly-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 10px;
+}
+@media (max-width: 400px) { .monthly-grid { grid-template-columns: 1fr; } }
+
+.monthly-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.monthly-label { font-size: 0.68em; color: var(--muted); margin-bottom: 6px; }
+.monthly-val   { font-size: 1.2em; font-weight: 700; color: var(--text); }
+.monthly-input {
+  width: 100%; background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 1.1em; font-weight: 700;
+  padding: 5px 8px; outline: none; transition: border-color .15s;
+  -moz-appearance: textfield;
+}
+.monthly-input:focus { border-color: var(--blue); }
+.monthly-input::-webkit-outer-spin-button, .monthly-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.memo-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.memo-label { font-size: 0.68em; color: var(--muted); margin-bottom: 6px; }
+.memo-text  { font-size: 0.82em; color: var(--text); min-height: 20px; }
+.memo-input {
+  width: 100%; background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 0.82em;
+  padding: 6px 8px; outline: none; resize: none; font-family: inherit;
+  transition: border-color .15s;
+}
+.memo-input:focus { border-color: var(--blue); }
+
+/* ── Tool cards ── */
+.tool-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 440px) { .tool-grid { grid-template-columns: 1fr; } }
+
+.tool-card {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 18px 14px;
+  text-decoration: none; color: inherit;
+  transition: border-color .15s, transform .15s;
+  position: relative; overflow: hidden;
+}
+.tool-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent, var(--blue)); opacity: 0; transition: opacity .15s;
+}
+.tool-card:hover { border-color: var(--accent, var(--blue)); transform: translateY(-2px); }
+.tool-card:hover::before { opacity: 1; }
+.tool-icon  { font-size: 1.5em; margin-bottom: 8px; }
+.tool-name  { font-size: 0.88em; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.tool-desc  { font-size: 0.72em; color: var(--muted); line-height: 1.6; flex: 1; }
+.tool-cta   { font-size: 0.70em; font-weight: 700; color: var(--accent, var(--blue)); margin-top: 12px; opacity: .7; transition: opacity .15s; }
+.tool-card:hover .tool-cta { opacity: 1; }
+
+/* ── Sidebar tools (smaller) ── */
+.side-tools { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.side-link {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; padding: 11px 14px;
+  text-decoration: none; color: var(--muted);
+  font-size: 0.80em; transition: all .15s;
+}
+.side-link:hover { border-color: var(--border); color: var(--text); }
+.side-link-arrow { font-size: 0.80em; }
+
+/* ── Footer ── */
+.footer { margin-top: 36px; font-size: 0.70em; color: #333; text-align: center; line-height: 1.9; }
+</style>
 </head>
 <body>
-  <div class="site-nav">
-    <a href="index.html">← ツール一覧</a>
-    <span class="site-nav-step">STEP 4 / 4</span>
+
+<!-- Nav -->
+<div class="topnav">
+  <a href="index.html">← ツール一覧</a>
+  <span class="topnav-step">STEP 4 / 4</span>
+</div>
+
+<!-- Market ticker -->
+<div class="market-bar">
+  <div class="market-inner" id="market-inner">
+    <span class="market-label">MARKET</span>
+    <span class="ticker"><span class="ticker-name">日経平均</span><span class="ticker-skeleton"></span></span>
+    <span class="ticker"><span class="ticker-name">TOPIX</span><span class="ticker-skeleton"></span></span>
+    <span class="ticker"><span class="ticker-name">ドル円</span><span class="ticker-skeleton"></span></span>
+    <span class="ticker"><span class="ticker-name">S&amp;P500</span><span class="ticker-skeleton"></span></span>
   </div>
-  <div id="root"></div>
+</div>
 
-  <script type="text/babel" data-presets="react,env">
-    const { useState, useMemo, useEffect } = React;
+<div class="container">
 
-    /* ============================================================
-       Formatters
-    ============================================================ */
-    const formatMan    = (n) => `${Math.round(n)}万円`;
-    const formatOkuMan = (n) => n >= 10000 ? `${(n / 10000).toFixed(1)}億円` : `${Math.round(n)}万円`;
+  <!-- Page header -->
+  <div class="page-header">
+    <h1>資産サマリー</h1>
+    <p>主要数値を記録して、各分析ツールへ</p>
+  </div>
 
-    /* ============================================================
-       Stock master data (25 銘柄)
-    ============================================================ */
-    const STOCKS = [
-      { code:"7203", name:"トヨタ自動車",           sector:"自動車",     per: 8.5,  pbr:1.1,  roe:13.2, div:2.8, cap:450000, price:3250  },
-      { code:"6758", name:"ソニーグループ",         sector:"電機",       per:18.2,  pbr:2.8,  roe:15.4, div:0.6, cap:180000, price:14200 },
-      { code:"7974", name:"任天堂",                 sector:"ゲーム",     per:22.5,  pbr:4.2,  roe:18.6, div:3.1, cap:90000,  price:7800  },
-      { code:"8306", name:"三菱UFJ FG",             sector:"銀行",       per:10.2,  pbr:0.9,  roe: 8.8, div:3.5, cap:195000, price:1340  },
-      { code:"9432", name:"NTT",                    sector:"通信",       per:11.8,  pbr:1.5,  roe:12.7, div:3.2, cap:145000, price:155   },
-      { code:"6861", name:"キーエンス",             sector:"精密機器",   per:45.2,  pbr:8.1,  roe:18.0, div:0.5, cap:165000, price:60500 },
-      { code:"4063", name:"信越化学工業",           sector:"化学",       per:16.8,  pbr:3.2,  roe:19.1, div:1.8, cap:72000,  price:5650  },
-      { code:"6098", name:"リクルートHD",           sector:"サービス",   per:28.5,  pbr:6.8,  roe:23.9, div:1.2, cap:115000, price:7200  },
-      { code:"9983", name:"ファーストリテイリング", sector:"小売",       per:38.2,  pbr:9.5,  roe:24.8, div:0.8, cap:120000, price:40000 },
-      { code:"9433", name:"KDDI",                   sector:"通信",       per:13.5,  pbr:2.1,  roe:15.6, div:3.5, cap:95000,  price:4500  },
-      { code:"8591", name:"オリックス",             sector:"金融",       per: 9.8,  pbr:1.0,  roe:10.2, div:3.8, cap:38000,  price:3200  },
-      { code:"6594", name:"ニデック",               sector:"電機",       per:32.5,  pbr:3.8,  roe:11.7, div:1.2, cap:42000,  price:5100  },
-      { code:"4452", name:"花王",                   sector:"日用品",     per:35.8,  pbr:5.2,  roe:14.5, div:2.8, cap:28000,  price:5800  },
-      { code:"4502", name:"武田薬品工業",           sector:"製薬",       per:24.2,  pbr:1.8,  roe: 7.4, div:4.8, cap:65000,  price:4200  },
-      { code:"6501", name:"日立製作所",             sector:"電機",       per:20.5,  pbr:2.8,  roe:13.6, div:1.6, cap:145000, price:4800  },
-      { code:"6752", name:"パナソニックHD",         sector:"電機",       per:14.8,  pbr:1.2,  roe: 8.1, div:2.2, cap:35000,  price:1450  },
-      { code:"7267", name:"本田技研工業",           sector:"自動車",     per: 7.8,  pbr:0.7,  roe: 9.0, div:3.8, cap:78000,  price:1520  },
-      { code:"6753", name:"シャープ",               sector:"電機",       per:45.0,  pbr:1.8,  roe: 4.0, div:0.0, cap:4800,   price:850   },
-      { code:"8001", name:"伊藤忠商事",             sector:"商社",       per: 9.5,  pbr:2.2,  roe:23.2, div:3.2, cap:115000, price:7500  },
-      { code:"8002", name:"丸紅",                   sector:"商社",       per: 7.8,  pbr:1.6,  roe:20.5, div:3.8, cap:48000,  price:2800  },
-      { code:"9984", name:"ソフトバンクG",          sector:"IT持株",     per:15.2,  pbr:1.1,  roe: 7.2, div:0.5, cap:122000, price:9200  },
-      { code:"4519", name:"中外製薬",               sector:"製薬",       per:28.5,  pbr:8.2,  roe:28.9, div:1.8, cap:98000,  price:6800  },
-      { code:"6367", name:"ダイキン工業",           sector:"機械",       per:24.8,  pbr:3.5,  roe:14.1, div:1.5, cap:68000,  price:23000 },
-      { code:"7751", name:"キヤノン",               sector:"精密機器",   per:14.2,  pbr:1.8,  roe:12.7, div:4.2, cap:48000,  price:4600  },
-      { code:"8035", name:"東京エレクトロン",       sector:"半導体",     per:22.5,  pbr:8.5,  roe:37.8, div:2.8, cap:88000,  price:25000 },
-    ];
+  <!-- Asset summary -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">資産サマリー（手入力）</span>
+      <button class="btn-sm" id="edit-btn" onclick="toggleEdit()">編集</button>
+    </div>
 
-    /* ============================================================
-       Market ticker config
-    ============================================================ */
-    const TICKERS = [
-      { symbol:"^N225",    label:"日経平均",  fmt:(v) => v.toLocaleString("ja-JP",{maximumFractionDigits:2}) },
-      { symbol:"^TOPX",    label:"TOPIX",     fmt:(v) => v.toLocaleString("ja-JP",{maximumFractionDigits:2}) },
-      { symbol:"USDJPY=X", label:"ドル円",    fmt:(v) => v.toFixed(2) + " 円" },
-      { symbol:"^GSPC",    label:"S&P 500",   fmt:(v) => v.toLocaleString("en-US",{maximumFractionDigits:2}) },
-    ];
-
-    /* ============================================================
-       Base UI components
-    ============================================================ */
-    const Section = ({ title, children, accent }) => (
-      <div style={{
-        background:"white", borderRadius:20, padding:"28px 32px",
-        boxShadow:"0 2px 20px rgba(0,0,0,0.06)", borderTop:`4px solid ${accent}`
-      }}>
-        <h2 style={{ margin:"0 0 24px", fontSize:15, fontWeight:700, color:"#333", letterSpacing:2, textTransform:"uppercase" }}>{title}</h2>
-        {children}
+    <div class="asset-cards" id="asset-display">
+      <div class="asset-card">
+        <div class="asset-card-label">現金・預金</div>
+        <div class="asset-card-val" id="d-cash">—<span class="asset-card-unit">万円</span></div>
       </div>
-    );
-
-    const Slider = ({ label, value, min, max, step, onChange, unit, note }) => (
-      <div style={{ marginBottom:20 }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
-          <span style={{ fontSize:13, color:"#666", fontWeight:600 }}>{label}</span>
-          <span style={{ fontSize:18, fontWeight:800, color:"#1a1a2e" }}>
-            {value.toLocaleString()}<span style={{ fontSize:12, marginLeft:2, fontWeight:500 }}>{unit}</span>
-          </span>
-        </div>
-        <input type="range" min={min} max={max} step={step} value={value}
-          onChange={e => onChange(Number(e.target.value))}
-          style={{ width:"100%", accentColor:"#4361ee" }} />
-        {note && <div style={{ fontSize:11, color:"#aaa", marginTop:4 }}>{note}</div>}
+      <div class="asset-card">
+        <div class="asset-card-label">NISA口座残高</div>
+        <div class="asset-card-val" id="d-nisa">—<span class="asset-card-unit">万円</span></div>
       </div>
-    );
-
-    const Stat = ({ label, value, sub, color="#4361ee", big }) => (
-      <div style={{ padding:"16px 20px", background:"#f8f9ff", borderRadius:14, flex:1, minWidth:140 }}>
-        <div style={{ fontSize:12, color:"#888", fontWeight:600, marginBottom:6 }}>{label}</div>
-        <div style={{ fontSize:big ? 28 : 22, fontWeight:800, color }}>{value}</div>
-        {sub && <div style={{ fontSize:11, color:"#aaa", marginTop:4 }}>{sub}</div>}
+      <div class="asset-card">
+        <div class="asset-card-label">頭金積立</div>
+        <div class="asset-card-val" id="d-down">—<span class="asset-card-unit">万円</span></div>
       </div>
-    );
-
-    const BarChart = ({ data, maxVal, color }) => (
-      <div style={{ display:"flex", alignItems:"flex-end", gap:6, height:120, marginTop:12 }}>
-        {data.map((d, i) => (
-          <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-            <div style={{ fontSize:9, color:"#999", fontWeight:600 }}>
-              {d.val >= 10000 ? `${(d.val/10000).toFixed(0)}億` : `${Math.round(d.val/10000*10)/10}億`}
-            </div>
-            <div style={{
-              width:"100%",
-              height:Math.max(4, (d.val / maxVal) * 100),
-              background:color,
-              borderRadius:"4px 4px 0 0",
-              opacity: 0.7 + (i / data.length) * 0.3
-            }} />
-            <div style={{ fontSize:9, color:"#999" }}>{d.label}</div>
-          </div>
-        ))}
+      <div class="asset-card total-card">
+        <div class="asset-card-label">合計推計</div>
+        <div class="asset-card-val" id="d-total">—<span class="asset-card-unit">万円</span></div>
       </div>
-    );
+    </div>
 
-    /* ============================================================
-       Market info bar
-    ============================================================ */
-    function MarketBar() {
-      const [prices, setPrices] = useState({});
-      const [loading, setLoading]  = useState(true);
-      const [fetchErr, setFetchErr] = useState(false);
+    <div class="asset-cards" id="asset-edit" style="display:none">
+      <div class="asset-card">
+        <div class="asset-card-label">現金・預金（万円）</div>
+        <input class="asset-input" type="number" id="i-cash" min="0" max="99999" step="10" placeholder="0">
+      </div>
+      <div class="asset-card">
+        <div class="asset-card-label">NISA口座残高（万円）</div>
+        <input class="asset-input" type="number" id="i-nisa" min="0" max="99999" step="10" placeholder="0">
+      </div>
+      <div class="asset-card">
+        <div class="asset-card-label">頭金積立（万円）</div>
+        <input class="asset-input" type="number" id="i-down" min="0" max="99999" step="10" placeholder="0">
+      </div>
+      <div class="asset-card total-card">
+        <div class="asset-card-label">合計推計</div>
+        <div class="asset-card-val" id="d-total-edit" style="padding-top:8px">—<span class="asset-card-unit">万円</span></div>
+      </div>
+    </div>
 
-      useEffect(() => {
-        let cancelled = false;
-        (async () => {
-          try {
-            const results = await Promise.allSettled(
-              TICKERS.map(t =>
-                fetch(
-                  `https://corsproxy.io/?${encodeURIComponent(
-                    `https://query1.finance.yahoo.com/v8/finance/chart/${t.symbol}`
-                  )}`
-                )
-                .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-                .then(d => {
-                  const meta = d.chart.result[0].meta;
-                  return {
-                    symbol: t.symbol,
-                    price:  meta.regularMarketPrice,
-                    prev:   meta.chartPreviousClose ?? meta.previousClose ?? meta.regularMarketPrice,
-                  };
-                })
-              )
-            );
-            if (cancelled) return;
-            const map = {};
-            results.forEach((r, i) => {
-              if (r.status === "fulfilled") map[TICKERS[i].symbol] = r.value;
-            });
-            setPrices(map);
-          } catch (_) {
-            if (!cancelled) setFetchErr(true);
-          } finally {
-            if (!cancelled) setLoading(false);
-          }
-        })();
-        return () => { cancelled = true; };
-      }, []);
+    <div class="asset-updated" id="asset-updated"></div>
+  </div>
 
-      return (
-        <div style={{ background:"#0f0f23", padding:"10px 32px", overflowX:"auto" }}>
-          <div style={{
-            maxWidth:800, margin:"0 auto",
-            display:"flex", gap:32, alignItems:"center",
-            minWidth:"fit-content"
-          }}>
-            <span style={{ fontSize:10, color:"#4361ee", fontWeight:700, letterSpacing:2, whiteSpace:"nowrap" }}>
-              MARKET
-            </span>
-            {TICKERS.map(t => {
-              const d = prices[t.symbol];
-              const chg = d ? (d.price - d.prev) / d.prev * 100 : null;
-              const up  = chg > 0;
-              return (
-                <div key={t.symbol} style={{ display:"flex", gap:8, alignItems:"baseline", whiteSpace:"nowrap" }}>
-                  <span style={{ fontSize:11, color:"#888" }}>{t.label}</span>
-                  {loading ? (
-                    <span className="skeleton" style={{ width:80, height:15 }} />
-                  ) : fetchErr || !d ? (
-                    <span style={{ fontSize:13, color:"#555" }}>— —</span>
-                  ) : (
-                    <>
-                      <span style={{ fontSize:15, fontWeight:800, color:"white" }}>{t.fmt(d.price)}</span>
-                      <span style={{ fontSize:11, color: up ? "#06d6a0" : "#f72585" }}>
-                        {up ? "▲" : "▼"}{Math.abs(chg).toFixed(2)}%
-                      </span>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-            {!loading && !fetchErr && (
-              <span style={{ fontSize:10, color:"#444", marginLeft:"auto", whiteSpace:"nowrap" }}>
-                起動時取得
-              </span>
-            )}
-          </div>
-        </div>
-      );
+  <!-- Monthly record -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">今月の記録</span>
+    </div>
+
+    <div class="monthly-grid" id="monthly-display">
+      <div class="monthly-item">
+        <div class="monthly-label">今月の NISA 積立</div>
+        <div class="monthly-val" id="d-mnisa">—<span style="font-size:.55em;color:var(--muted);margin-left:2px">万円</span></div>
+      </div>
+      <div class="monthly-item">
+        <div class="monthly-label">今月の貯蓄</div>
+        <div class="monthly-val" id="d-msave">—<span style="font-size:.55em;color:var(--muted);margin-left:2px">万円</span></div>
+      </div>
+    </div>
+
+    <div class="monthly-grid" id="monthly-edit" style="display:none">
+      <div class="monthly-item">
+        <div class="monthly-label">今月の NISA 積立（万円）</div>
+        <input class="monthly-input" type="number" id="i-mnisa" min="0" max="30" step="0.5" placeholder="0">
+      </div>
+      <div class="monthly-item">
+        <div class="monthly-label">今月の貯蓄（万円）</div>
+        <input class="monthly-input" type="number" id="i-msave" min="0" max="50" step="0.5" placeholder="0">
+      </div>
+    </div>
+
+    <div class="memo-wrap" style="margin-top:10px">
+      <div class="memo-label">メモ</div>
+      <div class="memo-text" id="d-memo" style="min-height:20px; color:var(--muted)">（なし）</div>
+      <textarea class="memo-input" id="i-memo" rows="2" placeholder="気になること・次の行動など" style="display:none"></textarea>
+    </div>
+  </div>
+
+  <!-- Analysis tools -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">分析ツール</span>
+    </div>
+
+    <div class="tool-grid">
+      <a class="tool-card" href="nisa_simulator.html" style="--accent: #06d6a0">
+        <div class="tool-icon">📈</div>
+        <div class="tool-name">NISA 積立シミュレーター</div>
+        <div class="tool-desc">積立額・期間・年利から最終評価額を試算。複利の力を確認できます。</div>
+        <div class="tool-cta">試算する →</div>
+      </a>
+
+      <a class="tool-card" href="家計キャッシュフロー.html" style="--accent: #f72585">
+        <div class="tool-icon">💰</div>
+        <div class="tool-name">家計キャッシュフロー</div>
+        <div class="tool-desc">月収入・住居費を整理して、現在と購入後の家計余力を確認できます。</div>
+        <div class="tool-cta">確認する →</div>
+      </a>
+
+      <a class="tool-card" href="rent_vs_buy.html" style="--accent: #7eb8f7">
+        <div class="tool-icon">🏠</div>
+        <div class="tool-name">賃貸 vs 購入シミュレーター</div>
+        <div class="tool-desc">物件価格・金利・売却シナリオから損益分岐点を計算します。</div>
+        <div class="tool-cta">比較する →</div>
+      </a>
+
+      <a class="tool-card" href="株スクリーニング.html" style="--accent: #f4a261">
+        <div class="tool-icon">🔍</div>
+        <div class="tool-name">日本株スクリーニング</div>
+        <div class="tool-desc">PER・PBR・ROE・配当でフィルタリング。25銘柄をソートして比較できます。</div>
+        <div class="tool-cta">スクリーニングする →</div>
+      </a>
+    </div>
+
+    <div class="side-tools">
+      <a class="side-link" href="フラット35_金利トラッカー.html">
+        <span>📊 フラット35 金利トラッカー — 現在の金利を歴史的水準で確認</span>
+        <span class="side-link-arrow">→</span>
+      </a>
+      <a class="side-link" href="物件スコアリング.html">
+        <span>🏠 物件スコアリング — 候補物件を採点・比較</span>
+        <span class="side-link-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">試算値はあくまで参考です。実際の判断には専門家への相談を推奨します。</div>
+
+<script>
+/* ── Storage ── */
+const STORAGE_KEY = 'asset_summary_v1';
+const DEFAULT = { cash: '', nisa: '', down: '', mnisa: '', msave: '', memo: '', updatedAt: '' };
+
+function load() {
+  try { return { ...DEFAULT, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; }
+  catch { return { ...DEFAULT }; }
+}
+function save(data) {
+  data.updatedAt = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+/* ── Display ── */
+function fmt(v) {
+  if (v === '' || v === null || v === undefined) return '—';
+  const n = Number(v);
+  return isNaN(n) ? '—' : n.toLocaleString();
+}
+
+function renderDisplay(data) {
+  const unit = '<span class="asset-card-unit">万円</span>';
+  document.getElementById('d-cash').innerHTML  = fmt(data.cash)  + unit;
+  document.getElementById('d-nisa').innerHTML  = fmt(data.nisa)  + unit;
+  document.getElementById('d-down').innerHTML  = fmt(data.down)  + unit;
+
+  const cash = Number(data.cash) || 0;
+  const nisa = Number(data.nisa) || 0;
+  const down = Number(data.down) || 0;
+  const total = cash + nisa + down;
+  const totalStr = (data.cash === '' && data.nisa === '' && data.down === '') ? '—' : total.toLocaleString();
+  document.getElementById('d-total').innerHTML = totalStr + unit;
+
+  document.getElementById('d-mnisa').innerHTML = fmt(data.mnisa) + '<span style="font-size:.55em;color:var(--muted);margin-left:2px">万円</span>';
+  document.getElementById('d-msave').innerHTML = fmt(data.msave) + '<span style="font-size:.55em;color:var(--muted);margin-left:2px">万円</span>';
+  document.getElementById('d-memo').textContent = data.memo || '（なし）';
+  document.getElementById('d-memo').style.color = data.memo ? 'var(--text)' : 'var(--muted)';
+  document.getElementById('asset-updated').textContent = data.updatedAt ? '最終更新: ' + data.updatedAt : '';
+}
+
+function renderEditTotal() {
+  const cash = Number(document.getElementById('i-cash').value) || 0;
+  const nisa = Number(document.getElementById('i-nisa').value) || 0;
+  const down = Number(document.getElementById('i-down').value) || 0;
+  const unit = '<span class="asset-card-unit">万円</span>';
+  document.getElementById('d-total-edit').innerHTML = (cash + nisa + down).toLocaleString() + unit;
+}
+
+/* ── Edit mode ── */
+let editMode = false;
+
+function toggleEdit() {
+  if (editMode) {
+    // Save
+    const data = load();
+    data.cash  = document.getElementById('i-cash').value;
+    data.nisa  = document.getElementById('i-nisa').value;
+    data.down  = document.getElementById('i-down').value;
+    data.mnisa = document.getElementById('i-mnisa').value;
+    data.msave = document.getElementById('i-msave').value;
+    data.memo  = document.getElementById('i-memo').value;
+    save(data);
+    renderDisplay(data);
+    document.getElementById('asset-display').style.display  = '';
+    document.getElementById('asset-edit').style.display     = 'none';
+    document.getElementById('monthly-display').style.display = '';
+    document.getElementById('monthly-edit').style.display   = 'none';
+    document.getElementById('d-memo').style.display   = '';
+    document.getElementById('i-memo').style.display   = 'none';
+    document.getElementById('edit-btn').textContent = '編集';
+    document.getElementById('edit-btn').classList.remove('active');
+    editMode = false;
+  } else {
+    // Enter edit mode
+    const data = load();
+    document.getElementById('i-cash').value  = data.cash;
+    document.getElementById('i-nisa').value  = data.nisa;
+    document.getElementById('i-down').value  = data.down;
+    document.getElementById('i-mnisa').value = data.mnisa;
+    document.getElementById('i-msave').value = data.msave;
+    document.getElementById('i-memo').value  = data.memo;
+    renderEditTotal();
+    document.getElementById('asset-display').style.display  = 'none';
+    document.getElementById('asset-edit').style.display     = '';
+    document.getElementById('monthly-display').style.display = 'none';
+    document.getElementById('monthly-edit').style.display   = '';
+    document.getElementById('d-memo').style.display   = 'none';
+    document.getElementById('i-memo').style.display   = '';
+    document.getElementById('edit-btn').textContent = '保存';
+    document.getElementById('edit-btn').classList.add('active');
+    editMode = true;
+    document.getElementById('i-cash').focus();
+  }
+}
+
+// Live total update in edit mode
+['i-cash','i-nisa','i-down'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderEditTotal);
+});
+
+/* ── Market ticker ── */
+const TICKERS = [
+  { symbol:'^N225',    label:'日経平均', fmt: v => v.toLocaleString('ja-JP',{maximumFractionDigits:0}) },
+  { symbol:'^TOPX',    label:'TOPIX',   fmt: v => v.toLocaleString('ja-JP',{maximumFractionDigits:2}) },
+  { symbol:'USDJPY=X', label:'ドル円',  fmt: v => v.toFixed(2) + '円' },
+  { symbol:'^GSPC',    label:'S&P500', fmt: v => v.toLocaleString('en-US',{maximumFractionDigits:0}) },
+];
+
+async function fetchMarket() {
+  const results = await Promise.allSettled(
+    TICKERS.map(t =>
+      fetch(`https://corsproxy.io/?${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + t.symbol)}`)
+        .then(r => r.json())
+        .then(d => {
+          const meta = d.chart.result[0].meta;
+          return { symbol: t.symbol, price: meta.regularMarketPrice, prev: meta.chartPreviousClose ?? meta.regularMarketPrice };
+        })
+    )
+  );
+  const inner = document.getElementById('market-inner');
+  inner.innerHTML = '<span class="market-label">MARKET</span>';
+  TICKERS.forEach((t, i) => {
+    const r = results[i];
+    const span = document.createElement('span');
+    span.className = 'ticker';
+    if (r.status === 'fulfilled') {
+      const d = r.value;
+      const chg = (d.price - d.prev) / d.prev * 100;
+      const up = chg >= 0;
+      span.innerHTML = `<span class="ticker-name">${t.label}</span><span class="ticker-val">${t.fmt(d.price)}</span><span class="ticker-chg ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(chg).toFixed(2)}%</span>`;
+    } else {
+      span.innerHTML = `<span class="ticker-name">${t.label}</span><span style="font-size:.75em;color:#3a3d4e">—</span>`;
     }
+    inner.appendChild(span);
+  });
+}
 
-    /* ============================================================
-       Stock Screener tab
-    ============================================================ */
-    function ScreenerTab() {
-      const [maxPer, setMaxPer] = useState(50);
-      const [maxPbr, setMaxPbr] = useState(10);
-      const [minRoe, setMinRoe] = useState(0);
-      const [minDiv, setMinDiv] = useState(0);
-      const [sortKey, setSortKey] = useState("cap");
-      const [sortDir, setSortDir] = useState("desc");
-
-      const handleSort = (key) => {
-        if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
-        else { setSortKey(key); setSortDir("desc"); }
-      };
-
-      const filtered = useMemo(() => (
-        [...STOCKS]
-          .filter(s => s.per <= maxPer && s.pbr <= maxPbr && s.roe >= minRoe && s.div >= minDiv)
-          .sort((a, b) => {
-            const av = a[sortKey], bv = b[sortKey];
-            if (typeof av === "string") return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
-            return sortDir === "asc" ? av - bv : bv - av;
-          })
-      ), [maxPer, maxPbr, minRoe, minDiv, sortKey, sortDir]);
-
-      const SortIcon = ({ k }) => {
-        if (sortKey !== k) return <span style={{ opacity:0.25, marginLeft:3 }}>↕</span>;
-        return <span style={{ color:"#4361ee", marginLeft:3 }}>{sortDir === "asc" ? "↑" : "↓"}</span>;
-      };
-
-      const COLS = [
-        { key:"code",   label:"コード",     str:true  },
-        { key:"name",   label:"銘柄名",     str:true  },
-        { key:"sector", label:"セクター",   str:true  },
-        { key:"per",    label:"PER(倍)"              },
-        { key:"pbr",    label:"PBR(倍)"              },
-        { key:"roe",    label:"ROE(%)"               },
-        { key:"div",    label:"配当(%)"              },
-        { key:"cap",    label:"時価総額(億)"          },
-        { key:"price",  label:"株価(円)"             },
-      ];
-
-      const cellColor = (key, v) => {
-        if (key === "per")  return v < 12 ? "#06d6a0" : v > 30 ? "#f72585" : "#333";
-        if (key === "pbr")  return v < 1  ? "#06d6a0" : v > 5  ? "#f72585" : "#333";
-        if (key === "roe")  return v > 20 ? "#06d6a0" : v < 7  ? "#f72585" : "#333";
-        if (key === "div")  return v >= 3 ? "#06d6a0" : "#333";
-        return "#333";
-      };
-
-      return (
-        <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
-
-          {/* Filter panel */}
-          <div style={{
-            background:"white", borderRadius:20, padding:"28px 32px",
-            boxShadow:"0 2px 20px rgba(0,0,0,0.06)", borderTop:"4px solid #f4a261"
-          }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-              <h2 style={{ margin:0, fontSize:15, fontWeight:700, color:"#333", letterSpacing:2 }}>
-                🔍 スクリーニング条件
-              </h2>
-              <button onClick={() => { setMaxPer(50); setMaxPbr(10); setMinRoe(0); setMinDiv(0); }} style={{
-                padding:"8px 18px", borderRadius:50, border:"1px solid #ddd",
-                background:"white", cursor:"pointer", fontSize:12, fontWeight:600, color:"#666"
-              }}>✕ 条件リセット</button>
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:"0 24px" }}>
-              <Slider label="PER 上限"       value={maxPer} min={5}   max={100} step={1}   onChange={setMaxPer} unit="倍以下" />
-              <Slider label="PBR 上限"       value={maxPbr} min={0.5} max={15}  step={0.5} onChange={setMaxPbr} unit="倍以下" />
-              <Slider label="ROE 下限"       value={minRoe} min={0}   max={40}  step={0.5} onChange={setMinRoe} unit="% 以上" />
-              <Slider label="配当利回り 下限" value={minDiv} min={0}   max={6}   step={0.1} onChange={setMinDiv} unit="% 以上" />
-            </div>
-          </div>
-
-          {/* Results panel */}
-          <div style={{
-            background:"white", borderRadius:20, padding:"24px 24px",
-            boxShadow:"0 2px 20px rgba(0,0,0,0.06)", borderTop:"4px solid #4361ee"
-          }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-              <h2 style={{ margin:0, fontSize:15, fontWeight:700, color:"#333", letterSpacing:2 }}>
-                📊 スクリーニング結果
-              </h2>
-              <div style={{
-                background:"#f0f4ff", borderRadius:20, padding:"4px 16px",
-                fontSize:13, fontWeight:800, color:"#4361ee"
-              }}>
-                {filtered.length} <span style={{ fontWeight:400, fontSize:12 }}>/ {STOCKS.length} 銘柄</span>
-              </div>
-            </div>
-
-            {filtered.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"48px 0", color:"#bbb", fontSize:14 }}>
-                条件に合致する銘柄がありません
-              </div>
-            ) : (
-              <div style={{ overflowX:"auto" }}>
-                <table>
-                  <thead>
-                    <tr>
-                      {COLS.map(c => (
-                        <th key={c.key}
-                          onClick={() => handleSort(c.key)}
-                          style={{ fontSize:12 }}>
-                          {c.label}<SortIcon k={c.key} />
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map(s => (
-                      <tr key={s.code}>
-                        <td style={{ color:"#4361ee", fontWeight:700, fontFamily:"monospace", fontSize:12 }}>{s.code}</td>
-                        <td style={{ fontWeight:600, fontSize:12, whiteSpace:"nowrap" }}>{s.name}</td>
-                        <td>
-                          <span style={{
-                            background:"#f0f4ff", borderRadius:20, padding:"2px 10px",
-                            fontSize:10, color:"#4361ee", fontWeight:600, whiteSpace:"nowrap"
-                          }}>{s.sector}</span>
-                        </td>
-                        {["per","pbr","roe","div"].map(k => (
-                          <td key={k} style={{ color:cellColor(k, s[k]), fontWeight:600 }}>
-                            {s[k].toFixed(1)}
-                          </td>
-                        ))}
-                        <td style={{ color:"#333" }}>{s.cap.toLocaleString()}</td>
-                        <td style={{ fontWeight:600 }}>{s.price.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Color legend */}
-            <div style={{ display:"flex", gap:20, marginTop:14, flexWrap:"wrap" }}>
-              {[
-                { color:"#06d6a0", text:"割安 / 高ROE / 高配当" },
-                { color:"#f72585", text:"割高 / 低ROE" },
-              ].map((l,i) => (
-                <span key={i} style={{ fontSize:11, color:"#999", display:"flex", alignItems:"center", gap:5 }}>
-                  <span style={{ display:"inline-block", width:10, height:10, borderRadius:2, background:l.color }} />
-                  {l.text}
-                </span>
-              ))}
-            </div>
-            <div style={{ marginTop:8, fontSize:11, color:"#ccc" }}>
-              ※ 表示データは参考値です。実際の投資判断は必ずご自身でご確認ください。
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    /* ============================================================
-       Main Dashboard
-    ============================================================ */
-    function Dashboard() {
-      // 住宅
-      const [rent,         setRent]         = useState(12.2);
-      const [subsidy,      setSubsidy]      = useState(4);
-      const [subsidyYears, setSubsidyYears] = useState(8);
-      const [buyPrice,     setBuyPrice]     = useState(5000);
-      const [downPay,      setDownPay]      = useState(500);
-      const [rate,         setRate]         = useState(1.5);
-      const [loanYears,    setLoanYears]    = useState(35);
-      // NISA
-      const [nisaMonthly, setNisaMonthly] = useState(3);
-      const [nisaYears,   setNisaYears]   = useState(20);
-      const [nisaReturn,  setNisaReturn]  = useState(5);
-      // 家計
-      const [myContrib,   setMyContrib]   = useState(14);
-      const [wifeContrib, setWifeContrib] = useState(10);
-      // Tab
-      const [tab, setTab] = useState(0);
-
-      /* ---- Derived values ---- */
-      const housing = useMemo(() => {
-        const loanAmt = buyPrice - downPay;
-        const monthlyRate = rate / 100 / 12;
-        const n = loanYears * 12;
-        const monthlyLoan = loanAmt * 10000 * monthlyRate * Math.pow(1 + monthlyRate, n)
-          / (Math.pow(1 + monthlyRate, n) - 1) / 10000;
-        const totalLoan     = monthlyLoan * n;
-        const totalInterest = totalLoan - loanAmt;
-        const rentNet       = (rent - subsidy) * 12 * subsidyYears + rent * 12 * (loanYears - subsidyYears);
-        const buyTotal      = downPay + totalLoan;
-        const diff          = rentNet - buyTotal;
-        return {
-          monthlyLoan: Math.round(monthlyLoan * 10) / 10,
-          totalInterest: Math.round(totalInterest),
-          buyTotal: Math.round(buyTotal),
-          rentNet:  Math.round(rentNet),
-          diff:     Math.round(diff),
-          loanAmt,
-        };
-      }, [rent, subsidy, subsidyYears, buyPrice, downPay, rate, loanYears]);
-
-      const nisa = useMemo(() => {
-        let total = 0;
-        const chartData = [];
-        for (let y = 1; y <= nisaYears; y++) {
-          for (let m = 0; m < 12; m++) {
-            total = (total + nisaMonthly * 10000) * (1 + nisaReturn / 100 / 12);
-          }
-          if (y % 5 === 0 || y === nisaYears) chartData.push({ label:`${y}年`, val: total / 10000 });
-        }
-        const invested = nisaMonthly * 12 * nisaYears;
-        const gain     = total / 10000 - invested;
-        return { total: total / 10000, invested, gain: Math.round(gain), chartData };
-      }, [nisaMonthly, nisaYears, nisaReturn]);
-
-      const household = useMemo(() => {
-        const total        = myContrib + wifeContrib;
-        const afterHousing = total - (rent - subsidy);
-        return { total, afterHousing: Math.round(afterHousing * 10) / 10 };
-      }, [myContrib, wifeContrib, rent, subsidy]);
-
-      const TABS = ["🏠 住宅", "📈 NISA", "💰 家計", "🔍 株スクリーニング"];
-
-      return (
-        <div style={{
-          minHeight:"100vh",
-          background:"linear-gradient(135deg,#f0f4ff 0%,#fafbff 100%)",
-          fontFamily:"'Hiragino Sans','Yu Gothic','Meiryo',sans-serif",
-          padding:"0 0 60px"
-        }}>
-
-          {/* Market bar */}
-          <MarketBar />
-
-          {/* Header */}
-          <div style={{ background:"#1a1a2e", padding:"32px 32px 28px", color:"white" }}>
-            <div style={{ maxWidth:800, margin:"0 auto" }}>
-              <div style={{ fontSize:11, letterSpacing:3, opacity:0.5, marginBottom:8, textTransform:"uppercase" }}>
-                Financial Dashboard
-              </div>
-              <h1 style={{ margin:0, fontSize:26, fontWeight:800, letterSpacing:-0.5 }}>資産形成ダッシュボード</h1>
-              <p style={{ margin:"8px 0 0", opacity:0.5, fontSize:13 }}>
-                住宅購入 × NISA積立 × 家計バランス × 日本株スクリーニング
-              </p>
-            </div>
-          </div>
-
-          {/* Summary bar */}
-          <div style={{ background:"#4361ee", padding:"16px 32px" }}>
-            <div style={{ maxWidth:800, margin:"0 auto", display:"flex", gap:32, flexWrap:"wrap" }}>
-              {[
-                { label:"住宅ローン月返済", value:`${housing.monthlyLoan}万円` },
-                { label:"NISA最終評価額",   value: formatOkuMan(nisa.total) },
-                { label:"家計余力（月）",    value:`${household.afterHousing}万円` },
-              ].map((s,i) => (
-                <div key={i} style={{ color:"white" }}>
-                  <div style={{ fontSize:11, opacity:0.7, marginBottom:2 }}>{s.label}</div>
-                  <div style={{ fontSize:20, fontWeight:800 }}>{s.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Body */}
-          <div style={{ maxWidth:800, margin:"0 auto", padding:"32px 16px 0" }}>
-
-            {/* Tab switcher */}
-            <div style={{ display:"flex", gap:8, marginBottom:24, flexWrap:"wrap" }}>
-              {TABS.map((t,i) => (
-                <button key={i} onClick={() => setTab(i)} style={{
-                  padding:"10px 22px", borderRadius:50, border:"none", cursor:"pointer",
-                  fontSize:13, fontWeight:700,
-                  background: tab === i ? "#1a1a2e" : "white",
-                  color:      tab === i ? "white"  : "#888",
-                  boxShadow:  tab === i
-                    ? "0 4px 14px rgba(26,26,46,0.25)"
-                    : "0 2px 8px rgba(0,0,0,0.06)",
-                  transition:"all 0.2s",
-                }}>{t}</button>
-              ))}
-            </div>
-
-            {/* ---- Tab 0: 住宅 ---- */}
-            {tab === 0 && (
-              <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
-                <Section title="🏠 住宅購入シミュレーション" accent="#4361ee">
-                  <Slider label="物件価格" value={buyPrice} min={2000} max={10000} step={100} onChange={setBuyPrice} unit="万円" />
-                  <Slider label="頭金" value={downPay} min={0} max={2000} step={50} onChange={setDownPay} unit="万円"
-                    note={`借入額: ${housing.loanAmt}万円`} />
-                  <Slider label="金利（年）" value={rate} min={0.3} max={3.5} step={0.05} onChange={setRate} unit="%" />
-                  <Slider label="返済期間" value={loanYears} min={10} max={35} step={1} onChange={setLoanYears} unit="年" />
-                  <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
-                    <Stat label="月返済額"       value={`${housing.monthlyLoan}万円`} big />
-                    <Stat label="総利息"         value={formatMan(housing.totalInterest)} color="#f72585" />
-                    <Stat label="総支払（購入）" value={formatMan(housing.buyTotal)}    color="#f72585" />
-                  </div>
-                </Section>
-
-                <Section title="🔑 賃貸 vs 購入 比較" accent="#7209b7">
-                  <Slider label="現在の家賃"         value={rent}         min={8}  max={20} step={0.1} onChange={setRent}         unit="万円" />
-                  <Slider label="住宅補助（月）"      value={subsidy}      min={0}  max={8}  step={0.5} onChange={setSubsidy}      unit="万円" />
-                  <Slider label="補助が出る残り期間"  value={subsidyYears} min={0}  max={15} step={1}   onChange={setSubsidyYears} unit="年" />
-                  <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginTop:8 }}>
-                    <Stat label={`${loanYears}年間・賃貸総額`} value={formatMan(housing.rentNet)} color="#7209b7" />
-                    <Stat label={`${loanYears}年間・購入総額`} value={formatMan(housing.buyTotal)} color="#4361ee" />
-                    <Stat
-                      label={housing.diff > 0 ? "購入が得な額" : "賃貸が得な額"}
-                      value={formatMan(Math.abs(housing.diff))}
-                      color={housing.diff > 0 ? "#06d6a0" : "#f72585"}
-                      big
-                    />
-                  </div>
-                  <div style={{
-                    marginTop:16, padding:"14px 18px", borderRadius:12,
-                    background: housing.diff > 0 ? "#f0fff8" : "#fff0f5",
-                    fontSize:13, color:"#333", lineHeight:1.7
-                  }}>
-                    {housing.diff > 0
-                      ? `✅ ${loanYears}年間トータルで購入が約${formatMan(housing.diff)}お得。住宅補助が出るうちに頭金を貯めるのが現実的な戦略。`
-                      : `⚠️ 補助込みの賃貸が約${formatMan(Math.abs(housing.diff))}お得。補助が切れるタイミングで再検討が吉。`
-                    }
-                  </div>
-                </Section>
-              </div>
-            )}
-
-            {/* ---- Tab 1: NISA ---- */}
-            {tab === 1 && (
-              <Section title="📈 NISA積立シミュレーション" accent="#06d6a0">
-                <Slider label="月積立額"   value={nisaMonthly} min={1}  max={10} step={0.5} onChange={setNisaMonthly} unit="万円" />
-                <Slider label="積立期間"   value={nisaYears}   min={5}  max={30} step={1}   onChange={setNisaYears}   unit="年" />
-                <Slider label="年利（想定）" value={nisaReturn} min={2}  max={10} step={0.5} onChange={setNisaReturn}  unit="%"
-                  note={'S&P500長期平均は約7%'} />
-                <div style={{ display:"flex", gap:12, flexWrap:"wrap", margin:"20px 0" }}>
-                  <Stat label="元本総額"   value={`${nisa.invested}万円`}      color="#888" />
-                  <Stat label="運用益"     value={formatMan(nisa.gain)}         color="#06d6a0" />
-                  <Stat label="最終評価額" value={formatOkuMan(nisa.total)} big color="#1a1a2e" />
-                </div>
-                <BarChart data={nisa.chartData} maxVal={Math.max(...nisa.chartData.map(d => d.val))} color="#06d6a0" />
-                <div style={{ marginTop:16, padding:"14px 18px", borderRadius:12, background:"#f0fff8", fontSize:13, color:"#333", lineHeight:1.7 }}>
-                  💡 月{nisaMonthly}万円×{nisaYears}年で元本{nisa.invested}万円 → 複利で約{formatOkuMan(nisa.total)}。運用益は非課税なので実質利回りはさらに上。
-                </div>
-              </Section>
-            )}
-
-            {/* ---- Tab 2: 家計 ---- */}
-            {tab === 2 && (
-              <Section title="💰 家計バランス" accent="#f72585">
-                <Slider label="自分の共有財布への拠出（月）" value={myContrib}   min={8}  max={25} step={0.5} onChange={setMyContrib}   unit="万円" />
-                <Slider label="妻の共有財布への拠出（月）"   value={wifeContrib} min={5}  max={20} step={0.5} onChange={setWifeContrib} unit="万円" />
-                <div style={{ display:"flex", gap:12, flexWrap:"wrap", margin:"20px 0" }}>
-                  <Stat label="共有財布 月収入計" value={`${household.total}万円`} big />
-                  <Stat label="家賃（実質負担）"
-                    value={`${Math.round((rent - subsidy) * 10) / 10}万円`}
-                    color="#f72585"
-                    sub={`補助${subsidy}万差引後`} />
-                  <Stat label="住居費後の月余力" value={`${household.afterHousing}万円`} color="#06d6a0" big />
-                </div>
-                <div style={{ marginTop:4 }}>
-                  <div style={{ display:"flex", height:24, borderRadius:12, overflow:"hidden" }}>
-                    <div style={{ flex: rent - subsidy,          background:"#f72585" }} />
-                    <div style={{ flex: household.afterHousing,  background:"#4361ee" }} />
-                  </div>
-                  <div style={{ display:"flex", gap:16, marginTop:8, fontSize:11, color:"#888" }}>
-                    <span>🔴 家賃実質負担 {Math.round((rent-subsidy)*10)/10}万</span>
-                    <span>🔵 生活費・貯蓄余力 {household.afterHousing}万</span>
-                  </div>
-                </div>
-                <div style={{ marginTop:16, padding:"14px 18px", borderRadius:12, background:"#fff0f8", fontSize:13, color:"#333", lineHeight:1.7 }}>
-                  💡 住宅購入後に月返済が{housing.monthlyLoan}万円になると、余力は約
-                  {Math.round((household.afterHousing - housing.monthlyLoan + (rent - subsidy)) * 10) / 10}
-                  万円に変化。NISA継続との両立を試算してみよう。
-                </div>
-              </Section>
-            )}
-
-            {/* ---- Tab 3: 株スクリーニング ---- */}
-            {tab === 3 && <ScreenerTab />}
-
-          </div>
-        </div>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
-  </script>
+/* ── Init ── */
+renderDisplay(load());
+fetchMarket();
+</script>
 </body>
 </html>
